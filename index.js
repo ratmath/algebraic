@@ -21,3 +21,7 @@ export * as qpoly from "./src/qpoly.js";
 export * as interval from "./src/interval.js";
 export { cosPi, sinPi, tanPi, rootOfUnity, rootsOfUnity, cyclotomic, chebyshevT, cosMinimal } from "./src/trig.js";
 export { continuedFraction, convergents, fromContinuedFraction, periodicContinuedFraction, pell, fundamentalUnit, fromQuadratic } from "./src/cf.js";
+
+/** Polynomial toolkit over Q (friendly inputs, Core Rational outputs). */
+export * as polys from "./src/polys.js";
+export { resultant, discriminant, countRoots, interpolate, partialFractions } from "./src/polys.js";
