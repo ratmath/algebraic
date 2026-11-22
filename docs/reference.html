@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Algebraic Reference</title>
+<meta name="description" content="Every function of @ratmath/algebraic.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Reference</div>
+<h1>Everything in the library</h1>
+<p class="lede">Every export of <code>@ratmath/algebraic</code>. Polynomials are coefficient arrays, constant term first; rationals inside the library are [n, d] BigInt pairs, and results meant for you are Core Rationals.</p>
+<input class="filter" id="filter" type="search" placeholder="Filter, e.g. root, norm, mod" aria-label="Filter the reference">
+<div class="tablewrap"><table class="ref" id="ref">
+<tr><th>Function</th><th>What it does</th></tr>
+<tr class="grp"><th colspan="2"><a href="numbers.html">Making numbers</a></th></tr>
+<tr><td>fromRational(x)</td><td>A rational (number, BigInt, string like &quot;3/4&quot; or &quot;0.1&quot;, Core Rational, [n, d]) as an AlgebraicReal.</td></tr>
+<tr><td>roots(p, { complex })</td><td>All roots of an integer or rational polynomial with multiplicities: real ones ascending as AlgebraicReal, then (with complex: true) the others as ComplexAlgebraic. Each on its minimal polynomial.</td></tr>
+<tr><td>realRoots(p)</td><td>Shorthand for roots(p).</td></tr>
+<tr><td>complex(x, y)</td><td>x + iy from real parts (rationals or AlgebraicReals).</td></tr>
+<tr><td>I()</td><td>The imaginary unit, root of x² + 1 with positive imaginary part.</td></tr>
+<tr><td>fromQuadratic(p, q, d, r)</td><td>(p + q√d)/r as an exact AlgebraicReal.</td></tr>
+<tr><td>new AlgebraicReal(poly, lo, hi)</td><td>The unique root of a square-free integer polynomial in the open interval (lo, hi) (pairs [n, d]).</td></tr>
+<tr><td>new ComplexAlgebraic(poly, re, im)</td><td>The unique root in a certified box re × im.</td></tr>
+<tr class="grp"><th colspan="2"><a href="numbers.html">Arithmetic</a></th></tr>
+<tr><td>add(a, b), sub, mul, div</td><td>Exact arithmetic by resultants; results are put on their minimal polynomials.</td></tr>
+<tr><td>neg(a), inv(a)</td><td>Negation and reciprocal (reversed coefficients).</td></tr>
+<tr><td>pow(a, k)</td><td>Integer power, k may be negative.</td></tr>
+<tr><td>nthRoot(a, n)</td><td>Positive real root of a positive real; real root of a negative real for odd n; principal (largest real part) root otherwise.</td></tr>
+<tr><td>sqrt(a)</td><td>Principal square root: √a, i√(−a), or the root with positive real part.</td></tr>
+<tr><td>abs(a), norm(a)</td><td>|a| and |a|² as exact real algebraic numbers.</td></tr>
+<tr><td>re(a), im(a), conjugate(a)</td><td>Real and imaginary parts and conjugate, exactly.</td></tr>
+<tr><td>sign(a), compare(a, b)</td><td>−1, 0 or 1 for reals, decided exactly.</td></tr>
+<tr><td>equals(a, b), isZero(a)</td><td>Exact equality, real or complex.</td></tr>
+<tr><td>isReal(a), isComplex(a)</td><td>Which kind of number.</td></tr>
+<tr><td>minimalPolynomial(a), simplify(a)</td><td>The minimal polynomial (primitive integer, constant first); the same number re-expressed on it.</td></tr>
+<tr><td>rationalOf(a)</td><td>[n, d] when a is rational, else null.</td></tr>
+<tr><td>MAX_DEGREE</td><td>64: the largest degree a result&#x27;s polynomial may have.</td></tr>
+<tr class="grp"><th colspan="2"><a href="numbers.html">Reading a number</a></th></tr>
+<tr><td>format(a, { digits })</td><td>Exact readable form when cheap: fraction, (p + q√d)/r, nested radical, a + bi; else certified digits ending in …</td></tr>
+<tr><td>a.toString(digits)</td><td>AlgebraicReal: digits with the last one certain to one unit (exact for rationals). ComplexAlgebraic: exact a + bi for degree 2, else digits for each part.</td></tr>
+<tr><td>a.refine(bits)</td><td>Shrink the isolating interval or box below 2⁻ᵇⁱᵗˢ.</td></tr>
+<tr><td>a.interval(bits)</td><td>AlgebraicReal: [lo, hi] as Core Rationals.</td></tr>
+<tr><td>a.box(bits)</td><td>ComplexAlgebraic: { re: [lo, hi], im: [lo, hi] } as Core Rationals.</td></tr>
+<tr><td>a.toRational(), a.isRational</td><td>The exact value when rational (decided exactly), else null.</td></tr>
+<tr><td>a.toNumber(), a.toNumbers()</td><td>Nearest double; { re, im } for complex.</td></tr>
+<tr><td>a.poly, a.lo, a.hi, a.re, a.im</td><td>The defining polynomial and the current enclosure.</td></tr>
+<tr class="grp"><th colspan="2"><a href="angles.html">Angles and roots of unity</a></th></tr>
+<tr><td>cosPi(r), sinPi(r), tanPi(r)</td><td>cos(πr), sin(πr), tan(πr) for rational r, exactly (denominators up to 1000).</td></tr>
+<tr><td>rootOfUnity(n, k = 1)</td><td>e^(2πik/n), exactly.</td></tr>
+<tr><td>rootsOfUnity(n)</td><td>All n of them, k = 0 … n − 1.</td></tr>
+<tr><td>cyclotomic(n)</td><td>The cyclotomic polynomial Φₙ.</td></tr>
+<tr><td>cosMinimal(n)</td><td>The minimal polynomial of cos(2π/n).</td></tr>
+<tr><td>chebyshevT(n)</td><td>The Chebyshev polynomial Tₙ.</td></tr>
+<tr class="grp"><th colspan="2"><a href="recognize.html">Recognition</a></th></tr>
+<tr><td>recognize(x, { maxDegree, margin })</td><td>Guess an algebraic number from a decimal string or interval; { value, poly, degree, height, digitsUsed, digitsNeeded } or null.</td></tr>
+<tr><td>lll(rows, delta)</td><td>LLL-reduce a basis of integer vectors (exact rational Gram–Schmidt).</td></tr>
+<tr class="grp"><th colspan="2"><a href="factoring.html">Factoring</a></th></tr>
+<tr><td>factor(p)</td><td>{ content, factors: [{ factor, multiplicity }] } over the integers, each factor primitive and irreducible (Zassenhaus).</td></tr>
+<tr><td>isIrreducible(p)</td><td>True when p is irreducible over Q.</td></tr>
+<tr><td>factorModP(p, prime)</td><td>Irreducible factors of a square-free polynomial over F_p (Cantor–Zassenhaus).</td></tr>
+<tr><td>squareFree(p)</td><td>Yun&#x27;s square-free factorisation [{ factor, multiplicity }].</td></tr>
+<tr class="grp"><th colspan="2"><a href="polynomials.html">Polynomial toolkit</a></th></tr>
+<tr><td>resultant(p, q)</td><td>Res(p, q) as a Core Rational.</td></tr>
+<tr><td>discriminant(p)</td><td>The discriminant as a Core Rational.</td></tr>
+<tr><td>countRoots(p, a, b)</td><td>Distinct real roots in (a, b] (Sturm); a, b default to ±∞.</td></tr>
+<tr><td>interpolate(points)</td><td>The least-degree polynomial through [[x, y], …].</td></tr>
+<tr><td>partialFractions(num, den)</td><td>{ polynomial, terms: [{ factor, power, numerator }] }.</td></tr>
+<tr><td>polys.add, sub, mul, divmod</td><td>Arithmetic over Q; divmod returns { quotient, remainder }.</td></tr>
+<tr><td>polys.gcd, gcdExt</td><td>Monic gcd; { gcd, s, t } with s·p + t·q = gcd.</td></tr>
+<tr><td>polys.evaluate, compose, derivative</td><td>p(x) at a rational, p(q(x)), p′.</td></tr>
+<tr><td>polys.fromRoots, toInteger, format</td><td>Monic polynomial with given rational roots; primitive integer form; human-readable text.</td></tr>
+<tr><td>isolate(p), countRealRoots(p)</td><td>Isolating intervals and the number of real roots of a square-free integer polynomial.</td></tr>
+<tr><td>simplestBetween(a, b)</td><td>The fraction with the smallest denominator in [a, b] (pairs).</td></tr>
+<tr class="grp"><th colspan="2"><a href="galois.html">Galois groups</a></th></tr>
+<tr><td>galoisGroup(p)</td><td>Degree ≤ 5: { degree, name, order, label, solvable, discriminant, discriminantIsSquare }; reducible input gives { reducible, factors }.</td></tr>
+<tr class="grp"><th colspan="2"><a href="continued-fractions.html">Continued fractions</a></th></tr>
+<tr><td>continuedFraction(x, terms)</td><td>Partial quotients of a rational or real algebraic number, exactly.</td></tr>
+<tr><td>convergents(terms)</td><td>The convergents as Core Rationals.</td></tr>
+<tr><td>periodicContinuedFraction(x)</td><td>{ preperiod, period } for a quadratic irrational.</td></tr>
+<tr><td>fromContinuedFraction(terms, period)</td><td>The number back: rational for finite terms, quadratic for a repeating period.</td></tr>
+<tr><td>pell(D)</td><td>Smallest x² − Dy² = 1 solution { x, y, negative } (negative solves = −1 when possible).</td></tr>
+<tr><td>fundamentalUnit(d)</td><td>{ unit, norm }: the fundamental unit of Q(√d) as a NumberField element.</td></tr>
+<tr class="grp"><th colspan="2"><a href="number-fields.html">Number fields</a></th></tr>
+<tr><td>new NumberField(minpoly, { name, root })</td><td>Q(α) for an irreducible polynomial; root picks the embedding (index, or &quot;positive&quot;).</td></tr>
+<tr><td>NumberField.quadratic(d), NumberField.gaussian()</td><td>Q(√d) and Q(i).</td></tr>
+<tr><td>K.of(x), K.gen, K.zero, K.one</td><td>Elements from a rational or a coefficient list in α.</td></tr>
+<tr><td>g.add, sub, mul, div, inv, pow, neg</td><td>Field arithmetic (polynomials mod m, inverses by extended Euclid).</td></tr>
+<tr><td>g.norm(), g.trace()</td><td>Field norm and trace as Core Rationals.</td></tr>
+<tr><td>g.equals, isZero, coefficients, toRational</td><td>Comparison and coefficient access.</td></tr>
+<tr><td>g.toAlgebraic()</td><td>The exact AlgebraicReal or ComplexAlgebraic through the field&#x27;s embedding.</td></tr>
+<tr><td>K.add(a, b), K.mul, …, K.sign</td><td>Field-object interface for field-generic algorithms.</td></tr>
+<tr class="grp"><th colspan="2"><a href="finite-fields.html">Finite fields</a></th></tr>
+<tr><td>primeField(p)</td><td>F_p: { zero, one, add, sub, mul, div, neg, inv, pow, sign, equals, from, order, primitive, log, sqrt, elements, format, size }.</td></tr>
+<tr><td>galoisField(p, k, modulus)</td><td>GF(pᵏ), elements as k coefficients; also gen, modulus, order, primitive, log, elements, format.</td></tr>
+<tr><td>isProbablePrime(n)</td><td>Miller–Rabin with 12 bases (deterministic below 3·10²⁴).</td></tr>
+<tr class="grp"><th colspan="2"><a href="finite-fields.html">Number theory</a></th></tr>
+<tr><td>factorInteger(n)</td><td>[{ prime, exponent }] by trial division and Pollard rho.</td></tr>
+<tr><td>crt(residues, moduli)</td><td>{ x, m } solving the congruences, or null.</td></tr>
+<tr><td>modPow(a, e, m), modInverse(a, m)</td><td>Powers and inverses mod m.</td></tr>
+<tr><td>jacobi(a, n)</td><td>Jacobi (Legendre) symbol.</td></tr>
+<tr><td>sqrtMod(a, p)</td><td>Square root mod an odd prime (Tonelli–Shanks), or null.</td></tr>
+<tr><td>primitiveRoot(p), multiplicativeOrder(a, n)</td><td>Least primitive root; order of a unit.</td></tr>
+<tr><td>discreteLogMod(g, h, p)</td><td>Least x with gˣ ≡ h (baby-step giant-step), or null.</td></tr>
+<tr><td>totient(n)</td><td>Euler φ.</td></tr>
+<tr><td>nt.egcd, nt.discreteLog, nt.orderIn</td><td>Extended gcd; generic BSGS and order finding for any group.</td></tr>
+<tr class="grp"><th colspan="2"><a href="reference.html">Lower level</a></th></tr>
+<tr><td>poly, qpoly, interval</td><td>Namespaces: integer polynomials and Sturm sequences, rational polynomials, interval arithmetic and the Krawczyk operator (also subpath exports @ratmath/algebraic/poly, /qpoly, /interval, /complex, /q).</td></tr>
+<tr><td>certifyComplexRoots(p, count)</td><td>Certified boxes for the non-real roots of a square-free integer polynomial.</td></tr>
+</table></div>
+
+<h2>Expression language used on these pages</h2>
+<p>The demos and <a href="explore.html">Explore</a> read expressions: numbers (exact, so 0.1 is 1/10), <code>i</code>, the variable <code>x</code> for polynomials, <code>+ − * / ^</code> (fractional powers are principal roots), implicit multiplication (<code>2x</code>, <code>3i</code>), <code>√</code>, and <code>name = expr</code> to keep a value.</p>
+<div class="tablewrap"><table class="ref" id="lang"></table></div>
+</article>
+</main>
+</div>
+<script type="module">
+import { h } from "./assets/site.js";
+import { FUNCTIONS } from "./assets/lang.js";
+const lang = document.getElementById("lang");
+lang.append(h("tr", {}, h("th", {}, "In expressions"), h("th", {}, "Meaning")));
+for (const [name, f] of Object.entries(FUNCTIONS)) {
+  const n = Array.isArray(f.args) ? f.args[1] : f.args;
+  lang.append(h("tr", {}, h("td", {}, `${name}(${["a", "b", "c"].slice(0, n).join(", ")})`), h("td", {}, f.doc)));
+}
+const filter = document.getElementById("filter");
+filter.addEventListener("input", () => {
+  const q = filter.value.trim().toLowerCase();
+  for (const table of [document.getElementById("ref"), lang]) {
+    for (const tr of table.querySelectorAll("tr")) {
+      if (tr.querySelector("th")) continue;
+      tr.hidden = q && !tr.textContent.toLowerCase().includes(q);
+    }
+  }
+});
+</script>
+</body>
+</html>

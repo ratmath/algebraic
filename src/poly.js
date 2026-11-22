@@ -325,3 +325,9 @@ export class AlgebraicReal {
 }
 
 export { Rational };
+
+/** Distinct real roots of the square-free p in the half-open interval (a, b] (pairs; ±Infinity allowed). */
+export function countRootsBetween(p, a, b) {
+  const chain = sturm(p);
+  return variations(chain, a) - variations(chain, b);
+}

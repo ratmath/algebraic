@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Galois Groups</title>
+<meta name="description" content="Galois groups of polynomials up to degree 5, with certified resolvents.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Polynomials</div>
+<h1>Galois groups</h1>
+<p class="lede">The roots of an irreducible polynomial can be shuffled in some ways that keep every polynomial relation among them true. Those shuffles form the Galois group. It decides whether the roots can be written with radicals: x⁵ − x − 1 has group S₅ and cannot, x⁵ − 2 has group F₂₀ and its roots are ⁵√2 times fifth roots of unity.</p>
+<div data-expr="galois(x^4 - 2)" data-examples="galois(x^3 - 3x + 1)|galois(x^4 + 1)|galois(x^4 - 4x^2 + 2)|galois(x^4 + 8x + 12)|galois(x^5 - x - 1)|galois(x^5 - 2)|galois(x^5 + 20x + 16)|galois(x^5 - 5x + 12)|galois(x^5 + x^4 - 4x^3 - 3x^2 + 3x + 1)"></div>
+
+<h2>Degrees 2 and 3</h2>
+<p>A quadratic's group swaps its two roots: C₂. For a cubic the group is either all six permutations S₃ or just the three rotations A₃ = C₃. The test is the discriminant Δ = Π(αᵢ − αⱼ)²: its square root Π(αᵢ − αⱼ) changes sign under odd permutations, so it is rational exactly when the group has only even ones. x³ − 3x + 1 has Δ = 81 = 9², group C₃.</p>
+
+<h2>Degree 4</h2>
+<p>The <strong>resolvent cubic</strong> of x⁴ + bx³ + cx² + dx + e has roots α₁α₂ + α₃α₄, α₁α₃ + α₂α₄, α₁α₄ + α₂α₃; its coefficients are</p>
+<div class="math">y³ − c·y² + (bd − 4e)·y − (b²e − 4ce + d²)</div>
+<p>Each transitive group of degree 4 leaves a different number of those three values fixed:</p>
+<div class="tablewrap"><table class="ref">
+<tr><th>Resolvent cubic</th><th>Δ square?</th><th>Group</th><th>Order</th></tr>
+<tr><td>irreducible</td><td>no</td><td>S₄</td><td>24</td></tr>
+<tr><td>irreducible</td><td>yes</td><td>A₄</td><td>12</td></tr>
+<tr><td>three rational roots</td><td>yes</td><td>V₄ = C₂ × C₂</td><td>4</td></tr>
+<tr><td>one rational root r</td><td>no</td><td>D₄ or C₄</td><td>8 or 4</td></tr>
+</table></div>
+<p>The last case is settled by the Kappe–Warren test: the group is C₄ exactly when x² − rx + e and x² + bx + (c − r) both split over Q(√Δ), that is, each has a discriminant that is 0, a square, or a square times Δ.</p>
+
+<h2>Degree 5, through certified resolvents</h2>
+<p>The transitive groups of degree 5 are C₅ ⊂ D₅ ⊂ F₂₀ ⊂ S₅ and A₅ ⊂ S₅. The first three are exactly the solvable ones. The test for "inside F₂₀" uses a quantity that F₂₀ leaves alone but other permutations move: label the five roots as corners of a pentagon and let</p>
+<div class="math">θ = (Σ_(pentagon edges) αᵢαⱼ − Σ_(pentagram edges) αᵢαⱼ)²</div>
+<p>There are six ways to draw the pentagon, giving six values θ₁ … θ₆ and the sextic resolvent Π(y − θₖ). The group lies in a copy of F₂₀ exactly when that sextic has a rational root (once it is square-free). Then the discriminant separates F₂₀ from D₅, and a second resolvent of degree 4, built from Σ αᵢ²αᵢ₊₁ around the oriented pentagon, separates D₅ from C₅.</p>
+<p>The resolvents have integer coefficients (they are symmetric functions of the roots of a monic integer polynomial), but no formula is needed. The library computes them from <strong>certified boxes</strong> around the five roots with exact interval arithmetic, refining until each coefficient's interval contains exactly one integer. So the result is proven, not estimated. If a resolvent comes out with a repeated root, the roots are first moved by a Tschirnhaus transformation y = x² + kx, which keeps the group.</p>
+
+<h2>In code</h2>
+<pre><code>import { galoisGroup } from "@ratmath/algebraic";
+galoisGroup([-2, 0, 0, 0, 1]);
+// { degree: 4, name: "D4", order: 8, label: "4T3", solvable: true,
+//   discriminant: Rational(-2048), discriminantIsSquare: false, resolventCubic: [...] }
+galoisGroup([-1, -1, 0, 0, 0, 1]).name;   // "S5", not solvable by radicals
+galoisGroup([-1, 0, 0, 0, 0, 1]);         // reducible: { reducible: true, factors: [...] }</code></pre>
+<p class="small muted">Labels follow the transitive-group numbering nTk. Degree 6 and above are not covered yet.</p>
+</article>
+</main>
+</div>
+</body>
+</html>

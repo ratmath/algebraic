@@ -1,7 +1,7 @@
 {
   "name": "@ratmath/algebraic",
   "version": "0.1.0",
-  "description": "Exact algebraic numbers (real and complex), polynomial factoring, number fields and finite fields for RatMath",
+  "description": "Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath",
   "type": "module",
   "main": "index.js",
   "exports": {
@@ -21,7 +21,8 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "test": "bun test ./tests"
+    "test": "bun test ./tests",
+    "docs:build": "bun scripts/build-docs.js"
   },
   "keywords": [
     "algebraic-numbers",

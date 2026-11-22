@@ -10,7 +10,8 @@
 import { AlgebraicReal, isolate, primitive, degree, signAt, squareFree } from "./poly.js";
 import { ComplexAlgebraic, certifyComplexRoots } from "./complex.js";
 import { factor } from "./factor.js";
-import { reduce, addQ, subQ, mulQ, divQ, toPair, sqrtFloor, detInt, abs } from "./q.js";
+import { reduce, addQ, subQ, mulQ, divQ, toPair, sqrtFloor, detInt } from "./q.js";
+import { quadraticParts, realSide, formatReal, fmtQ, joinParts, nestedRadical } from "./radical.js";
 import { ivAdd, ivSub, ivMul } from "./interval.js";
 
 export const MAX_DEGREE = 64;
@@ -70,7 +71,16 @@ export function roots(coeffs, { complex = false } = {}) {
     const rs = complex ? rootsOfIrreducible(f) : isolate(f);
     for (const value of rs) out.push({ value, multiplicity });
   }
-  const real = out.filter((r) => isReal(r.value)).sort((x, y) => compare(x.value, y.value));
+  // distinct roots, so refining their intervals always separates them (no resultants needed)
+  const apart = (a, b) => {
+    for (let bits = 8; ; bits *= 2) {
+      const { re: A } = box(a, bits);
+      const { re: B } = box(b, bits);
+      if (cmp(A[1], B[0]) < 0) return -1;
+      if (cmp(B[1], A[0]) < 0) return 1;
+    }
+  };
+  const real = out.filter((r) => isReal(r.value)).sort((x, y) => apart(x.value, y.value));
   return [...real, ...out.filter((r) => !isReal(r.value))];
 }
 
@@ -314,12 +324,19 @@ export const conjugate = (a) => (isReal(a) ? a : a.conjugate());
 /** Real part, as an exact real algebraic number. */
 export function re(a) {
   if (isReal(a)) return a;
+  if (degree(a.poly) === 2) return fromRational(reduce(-a.poly[1], 2n * a.poly[2]));
   const s = add(a, a.conjugate());
   return mul(s, fromRational([1n, 2n]));
 }
 /** Imaginary part, as an exact real algebraic number. */
 export function im(a) {
   if (isReal(a)) return fromRational([0n, 1n]);
+  if (degree(a.poly) === 2) {
+    // (b² − 4ac) < 0: Im = ±√(4ac − b²) / 2a, sign from the box
+    const [c, b, lc] = a.poly;
+    const v = nthRoot(fromRational(reduce(4n * lc * c - b * b, 4n * lc * lc)), 2);
+    return a.imSign > 0 ? v : neg(v);
+  }
   const d = sub(a, a.conjugate()); // 2i·Im
   return mul(div(d, I()), fromRational([1n, 2n]));
 }
@@ -344,13 +361,79 @@ function nthBounds([num, den], n, bits) {
   return [reduce(lo, den * s), reduce(lo + 1n, den * s)];
 }
 
-/** The real n-th root (n ≥ 2) of a real a: principal for a ≥ 0; for a < 0 only odd n. */
+/** Box product of two enclosures. */
+function boxMul(A, B) {
+  return { re: ivSub(ivMul(A.re, B.re), ivMul(A.im, B.im)), im: ivAdd(ivMul(A.re, B.im), ivMul(A.im, B.re)) };
+}
+function boxPow(A, n) {
+  let out = A;
+  for (let k = 1; k < n; k += 1) out = boxMul(out, A);
+  return out;
+}
+const pairLt = (x, y) => cmp(x, y) < 0;
+
+/**
+ * The principal n-th root of a non-real z, or of a negative real when n is
+ * even: the n-th root with the largest real part (ties, which happen only for
+ * negative reals, go to the one with positive imaginary part).
+ *
+ * Candidates are the roots of m(xⁿ), m the minimal polynomial of z. Each one's
+ * n-th power is a conjugate of z; interval powers decide which, and then the
+ * principal one among the n roots of z itself is picked by real part.
+ */
+function principalRoot(z, n) {
+  const m = minimalPolynomial(z);
+  const conj = rootsOfIrreducible(m);
+  const pn = [];
+  m.forEach((c, i) => {
+    pn[n * i] = c;
+    if (i < m.length - 1) for (let k = 1; k < n; k += 1) pn[n * i + k] = 0n;
+  });
+  const candidates = [];
+  for (const { factor: f } of factor(primitive(pn)).factors) {
+    if (degree(f) > MAX_DEGREE) throw new RangeError(`the result needs a polynomial of degree ${degree(f)}; the limit is ${MAX_DEGREE}`);
+    candidates.push(...rootsOfIrreducible(f));
+  }
+  // which conjugate of z is z itself, and which conjugate each candidate's power is
+  const owner = (encl, bits) => {
+    const hits = conj.filter((c) => overlaps(box(c, bits), encl));
+    return hits.length === 1 ? hits[0] : null;
+  };
+  let mine = null;
+  for (let bits = 8; bits <= 8192 && !mine; bits *= 2) {
+    const self = owner(box(z, bits), bits);
+    if (!self) continue;
+    const settled = candidates.map((c) => owner(boxPow(box(c, bits), n), bits));
+    if (settled.every(Boolean)) mine = candidates.filter((c, k) => settled[k] === self);
+  }
+  if (!mine || mine.length !== n) throw new Error("algebraic: could not sort the n-th roots");
+  const negReal = isReal(z);
+  for (let bits = 8; bits <= 8192; bits *= 2) {
+    let pool = mine;
+    if (negReal) {
+      const up = pool.filter((c) => !isReal(c) && box(c, bits).im[0][0] > 0n);
+      if (up.length + pool.filter((c) => isReal(c) || box(c, bits).im[1][0] < 0n).length !== pool.length) continue;
+      pool = up;
+    }
+    const boxes = pool.map((c) => box(c, bits));
+    const best = boxes.findIndex((B, k) => boxes.every((C, j) => j === k || pairLt(C.re[1], B.re[0])));
+    if (best >= 0) return pool[best];
+  }
+  throw new Error("algebraic: could not pick the principal root");
+}
+
+/**
+ * The n-th root (n ≥ 2) of a. For real a ≥ 0 the positive real root; for real
+ * a < 0 the real root when n is odd and the principal complex root when n is
+ * even; for non-real a the principal root (largest real part).
+ */
 export function nthRoot(a, n) {
   if (!Number.isInteger(n) || n < 2) throw new RangeError("nthRoot needs n ≥ 2");
+  if (!isReal(a)) return principalRoot(a, n);
   const sg = sign(a);
   if (sg === 0) return a;
   if (sg < 0) {
-    if (n % 2 === 0) throw new RangeError("an even root of a negative number is not real; use sqrt for i·√");
+    if (n % 2 === 0) return n === 2 ? mul(I(), nthRoot(neg(a), 2)) : principalRoot(a, n);
     return neg(nthRoot(neg(a), n));
   }
   const r = a.rational;
@@ -383,10 +466,69 @@ export function nthRoot(a, n) {
   });
 }
 
-/** √a for real a: real when a ≥ 0, i·√(−a) when a < 0. */
-export function sqrt(a) {
-  if (!isReal(a)) throw new RangeError("square roots of non-real numbers are not supported yet");
-  return sign(a) >= 0 ? nthRoot(a, 2) : mul(I(), nthRoot(neg(a), 2));
+/** The principal square root: √a ≥ 0 for real a ≥ 0, i·√(−a) for a < 0, the root with positive real part otherwise. */
+export const sqrt = (a) => nthRoot(a, 2);
+
+/** The complex number x + y·i from real parts (rationals or AlgebraicReals). */
+export function complex(x, y = 0) {
+  const X = isReal(x) || isComplex(x) ? x : fromRational(x);
+  const Y = isReal(y) || isComplex(y) ? y : fromRational(y);
+  if (!isReal(X) || !isReal(Y)) throw new TypeError("complex(x, y) needs real parts");
+  return isZero(Y) ? X : add(X, mul(Y, I()));
 }
 
-export { isReal, isComplex, signAt, squareFree, abs, sqrtFloor };
+/** |a|², exactly: a·ā (a real algebraic number). */
+export function norm(a) {
+  if (isReal(a)) return mul(a, a);
+  if (degree(a.poly) === 2) {
+    // a·ā is the product of the two roots: c/a
+    const [c, , lc] = a.poly;
+    return fromRational(reduce(c, lc));
+  }
+  return mul(a, a.conjugate());
+}
+
+/** |a|, exactly: the absolute value of a real, the modulus of a complex number. */
+export function abs(a) {
+  if (isReal(a)) return sign(a) < 0 ? neg(a) : a;
+  return nthRoot(norm(a), 2);
+}
+
+/**
+ * A readable exact form when one is cheap: rationals as fractions, quadratic
+ * irrationals as (p + q√d)/r, quadratic complex numbers as a + bi; otherwise
+ * certified digits. `{ digits }` sets how many.
+ */
+export function format(a, { digits = 12 } = {}) {
+  if (isReal(a)) {
+    const r = a.rational;
+    if (r) return fmtQ(r);
+    const s = degree(a.poly) === 2 ? a : simplify(a);
+    if (degree(s.poly) === 2) {
+      const side = realSide(s.poly, () => [s.lo, s.hi], (b) => s.refine(b));
+      return formatReal(quadraticParts(s.poly, side));
+    }
+    if (degree(s.poly) === 4) {
+      // a nested radical ±√(A + B√d)/C when the square is quadratic, such as cos(π/8) = √(2 + √2)/2
+      const sq = mul(s, s);
+      if (degree(sq.poly) === 2) {
+        const side = realSide(sq.poly, () => [sq.lo, sq.hi], (b) => sq.refine(b));
+        return (sign(s) < 0 ? "−" : "") + nestedRadical(quadraticParts(sq.poly, side));
+      }
+    }
+    return s.toString(digits);
+  }
+  if (degree(a.poly) === 2) return a.toString(digits);
+  if (degree(a.poly) <= 4) {
+    // parts with exact forms, such as ∛i = √3/2 + (1/2)i
+    const x = re(a);
+    const y = im(a);
+    const negIm = sign(y) < 0;
+    const reS = x.rational && x.rational[0] === 0n ? "" : format(x);
+    const imS = format(negIm ? neg(y) : y);
+    if (!reS.endsWith("…") && !imS.endsWith("…")) return joinParts(reS, negIm, imS);
+  }
+  return a.toString(digits);
+}
+
+export { isReal, isComplex, signAt, squareFree, sqrtFloor };

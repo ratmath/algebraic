@@ -80,11 +80,59 @@ an irreducible modulus found automatically).
 @ratmath/linalg uses this package for eigenvalues, singular values and its
 algebraic field.
 
+## Complex numbers
+
+`complex(x, y)`, `I()`, `abs`, `norm`, `re`, `im`, `conjugate`. `nthRoot(a, n)`
+and `sqrt(a)` take principal roots of non-real numbers (the root with the
+largest real part) and even roots of negative reals; odd roots of negative
+reals stay real. `format(a)` prints exact forms where they are short:
+`(1 + √5)/2`, `√(2 + √2)/2`, `(√6 − √2)/4`, `−1/2 + i√3/2`, `√3/2 + i/2`;
+otherwise certified digits ending in "…".
+
+## Angles and roots of unity
+
+`cosPi(r)`, `sinPi(r)`, `tanPi(r)` for rational r (exact, no π involved),
+`rootOfUnity(n, k)`, `rootsOfUnity(n)`, `cyclotomic(n)`, `chebyshevT(n)`,
+`cosMinimal(n)`.
+
+## Polynomials
+
+`resultant`, `discriminant`, `countRoots(p, a, b)` (Sturm), `interpolate`,
+`partialFractions(num, den)`, and the `polys` namespace (`add`, `mul`,
+`divmod`, `gcd`, `gcdExt`, `compose`, `derivative`, `evaluate`, `fromRoots`,
+`toInteger`, `format`). `galoisGroup(p)` names the Galois group of a
+polynomial of degree ≤ 5 (resolvent cubic and Kappe–Warren for quartics;
+sextic and quartic resolvents computed exactly from certified root
+enclosures for quintics).
+
+## Continued fractions, Pell, units
+
+`continuedFraction(x, terms)` for any real algebraic number, `convergents`,
+`periodicContinuedFraction(x)` for quadratic irrationals,
+`fromContinuedFraction(terms, period)`, `pell(D)`, `fundamentalUnit(d)`.
+
+## Number theory and recognition
+
+`factorInteger` (Pollard rho), `crt`, `modPow`, `modInverse`, `jacobi`,
+`sqrtMod`, `primitiveRoot`, `multiplicativeOrder`, `discreteLogMod`,
+`totient`, and the `nt` namespace. Finite fields gain `order`, `primitive`,
+`log`, `elements` (and `sqrt` for F_p). `recognize("1.6180339887")` guesses
+an algebraic number from its digits with LLL (`lll` is exported) and accepts
+it only when the polynomial is much smaller than the digits given.
+
+## Docs
+
+`docs/` is a static site: an overview, a full reference, a free-form explore
+page and ten topic pages with live demos. `bun run docs:build` bundles the
+library into `docs/assets/algebraic.js`; serve `docs/` with any static server
+or GitHub Pages.
+
 ## Limits
 
-Complex square roots of non-real numbers are not supported yet. Resultants
-grow as (deg a)·(deg b), so long chains of operations on high-degree numbers
-get slow; `MAX_DEGREE` (64) guards the size of any result's polynomial.
+Resultants grow as (deg a)·(deg b), so long chains of operations on
+high-degree numbers get slow; `MAX_DEGREE` (64) guards the size of any
+result's polynomial. Galois groups stop at degree 5; factoring over number
+fields is not there yet.
 
 ## Develop
 
