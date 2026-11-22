@@ -9,6 +9,7 @@ export {
   fromRational, rationalOf, roots, realRoots, minimalPolynomial, simplify,
   neg, add, sub, mul, inv, div, pow, sign, isZero, compare, equals,
   I, conjugate, re, im, nthRoot, sqrt, isReal, isComplex, MAX_DEGREE,
+  complex, norm, abs, format,
 } from "./src/arith.js";
 export { factor, isIrreducible, factorModP } from "./src/factor.js";
 export { NumberField, NumberFieldElement } from "./src/numberfield.js";

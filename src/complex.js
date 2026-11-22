@@ -6,6 +6,7 @@
 
 import { derivative, degree } from "./poly.js";
 import { reduce, addQ, subQ, mulQ, pairToNumber, toPair, toRational } from "./q.js";
+import { quadraticParts, formatComplex, certifiedDecimal } from "./radical.js";
 import { iv, ivAdd, ivSub, ivMul, ivWidth, krawczyk, toCore } from "./interval.js";
 
 /** Float roots of an integer polynomial (constant first) by Durand–Kerner. */
@@ -109,11 +110,31 @@ export class ComplexAlgebraic {
     return { re: mid(this.re), im: mid(this.im) };
   }
 
+  /**
+   * Exact "a + bi" form when the number is a root of a quadratic (so every
+   * Gaussian rational and every (p + q√−m)/r), else certified digits for
+   * each part, the last digit off by at most one unit, ending in "…".
+   */
   toString(digits = 10) {
-    const { re, im } = this.toNumbers();
-    const r = Number(re.toPrecision(digits));
-    const i = Number(Math.abs(im).toPrecision(digits));
-    return `${r} ${im < 0 ? "−" : "+"} ${i}i…`;
+    if (degree(this.poly) === 2) return formatComplex(quadraticParts(this.poly, this.#imSign() * (this.poly[2] > 0n ? 1 : -1)));
+    const reS = certifiedDecimal(() => this.re, (b) => this.refine(b), digits);
+    const imS = certifiedDecimal(() => this.im, (b) => this.refine(b), digits);
+    const neg = imS.startsWith("−");
+    return `${reS} ${neg ? "−" : "+"} ${neg ? imS.slice(1) : imS}i…`;
+  }
+
+  /** Sign of the imaginary part (never 0 for a non-real number). */
+  #imSign() {
+    for (let bits = 8; bits <= 8192; bits *= 2) {
+      if (this.im[0][0] > 0n) return 1;
+      if (this.im[1][0] < 0n) return -1;
+      this.refine(bits);
+    }
+    throw new Error("could not settle the sign of the imaginary part");
+  }
+
+  get imSign() {
+    return this.#imSign();
   }
 }
 
