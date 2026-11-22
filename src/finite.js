@@ -4,6 +4,7 @@
 // field-generic algorithms (for example @ratmath/linalg's `field` module).
 
 import { factorModP } from "./factor.js";
+import { multiplicativeOrder, primitiveRoot, discreteLog, discreteLogMod, orderIn, sqrtMod } from "./nt.js";
 
 export function primeField(p) {
   p = BigInt(p);
@@ -29,6 +30,19 @@ export function primeField(p) {
     neg: (a) => mod(-a),
     inv,
     sign: (a) => (a === 0n ? 0 : 1),
+    size: p,
+    pow: (a, e) => { let r = 1n; let b = mod(a); e = BigInt(e); if (e < 0n) { b = inv(b); e = -e; } while (e) { if (e & 1n) r = (r * b) % p; b = (b * b) % p; e >>= 1n; } return r; },
+    equals: (a, b) => mod(a) === mod(b),
+    /** Multiplicative order of a nonzero a. */
+    order: (a) => multiplicativeOrder(mod(a), p),
+    /** A generator of the multiplicative group (the least primitive root). */
+    primitive: () => primitiveRoot(p),
+    /** The least x with gˣ = a, g a primitive root by default; null if none. */
+    log: (a, g = primitiveRoot(p)) => discreteLogMod(g, mod(a), p),
+    /** A square root of a, or null. */
+    sqrt: (a) => (p === 2n ? mod(a) : sqrtMod(mod(a), p)),
+    elements: () => Array.from({ length: Number(p) }, (_, i) => BigInt(i)),
+    format: (a) => `${mod(a)}`,
     from(x) {
       if (typeof x === "bigint") return mod(x);
       if (typeof x === "number") return mod(BigInt(x));
@@ -139,6 +153,24 @@ export function galoisField(p, k, modulus = null) {
   };
   const zero = Array(k).fill(0n);
   const one = [1n, ...Array(k - 1).fill(0n)];
+  const eq = (a, b) => a.every((c, i) => c === b[i]);
+  const fromIndex = (n) => {
+    const c = [];
+    for (let i = 0; i < k; i += 1) {
+      c.push(n % p);
+      n /= p;
+    }
+    return c;
+  };
+  const order = (a) => {
+    if (isZ(a)) throw new RangeError("0 has no multiplicative order");
+    return orderIn(size - 1n, (e) => eq(pow(a, e), one));
+  };
+  let prim = null;
+  const primitive = () => {
+    if (!prim) for (let n = 1n; n < size; n += 1n) if (order(fromIndex(n)) === size - 1n) { prim = fromIndex(n); break; }
+    return prim;
+  };
   return {
     p,
     k,
@@ -155,7 +187,14 @@ export function galoisField(p, k, modulus = null) {
     inv,
     pow: (a, e) => (e < 0 ? pow(inv(a), BigInt(-e)) : pow(a, BigInt(e))),
     sign: (a) => (isZ(a) ? 0 : 1),
-    equals: (a, b) => a.every((c, i) => c === b[i]),
+    equals: eq,
+    order,
+    primitive,
+    log: (a, g = primitive()) => discreteLog(g, a, order(g), { one, mul, key: (x) => x.join(","), inv }),
+    elements: () => {
+      if (size > 100000n) throw new RangeError("too many elements to list");
+      return Array.from({ length: Number(size) }, (_, n) => fromIndex(BigInt(n)));
+    },
     from: (x) => [F.from(x), ...Array(k - 1).fill(0n)],
     format: (a, v = "a") => {
       const parts = [];
