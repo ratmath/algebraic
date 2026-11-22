@@ -28,3 +28,4 @@ export { resultant, discriminant, countRoots, interpolate, partialFractions } fr
 export * as nt from "./src/nt.js";
 export { factorInteger, crt, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient } from "./src/nt.js";
 export { galoisGroup } from "./src/galois.js";
+export { lll, recognize } from "./src/lll.js";
