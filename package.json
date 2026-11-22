@@ -6,16 +6,38 @@
   "main": "index.js",
   "exports": {
     ".": "./index.js",
+    "./poly": "./src/poly.js",
+    "./qpoly": "./src/qpoly.js",
+    "./complex": "./src/complex.js",
+    "./interval": "./src/interval.js",
+    "./q": "./src/q.js",
     "./package.json": "./package.json"
   },
-  "files": ["index.js", "src/", "README.md", "LICENSE"],
+  "files": [
+    "index.js",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
   "sideEffects": false,
   "scripts": {
     "test": "bun test ./tests"
   },
-  "keywords": ["algebraic-numbers", "exact", "polynomial", "factoring", "number-field", "finite-field", "sturm", "resultant"],
+  "keywords": [
+    "algebraic-numbers",
+    "exact",
+    "polynomial",
+    "factoring",
+    "number-field",
+    "finite-field",
+    "sturm",
+    "resultant"
+  ],
   "license": "MIT",
-  "repository": { "type": "git", "url": "git+https://github.com/ratmath/algebraic.git" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ratmath/algebraic.git"
+  },
   "homepage": "https://github.com/ratmath/algebraic#readme",
   "dependencies": {
     "@ratmath/core": "^0.8.0"
