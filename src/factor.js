@@ -111,7 +111,7 @@ function powModPoly(base, e, f, p) {
 let seed = 12345n;
 const rnd = (p) => {
   seed = (seed * 6364136223846793005n + 1442695040888963407n) % 18446744073709551616n;
-  return seed % p;
+  return (seed >> 32n) % p; // the high bits: the low bits of a power-of-two LCG cycle quickly
 };
 
 function distinctDegree(f, p) {
@@ -139,7 +139,16 @@ function equalDegree(f, d, p) {
   for (;;) {
     const a = trimP(Array.from({ length: n }, () => rnd(p)));
     if (a.length < 2) continue;
-    const b = subM(powModPoly(a, e, f, p), [1n], p);
+    let b;
+    if (p === 2n) {
+      // characteristic 2: the trace a + a² + … + a^(2^(d−1)) splits instead of a^((pᵈ−1)/2)
+      let t = remM(a, f, p);
+      b = t;
+      for (let j = 1; j < d; j += 1) {
+        t = remM(mulM(t, t, p), f, p);
+        b = addM(b, t, p);
+      }
+    } else b = subM(powModPoly(a, e, f, p), [1n], p);
     const g = gcdM(b, f, p);
     if (g.length > 1 && g.length < f.length) {
       return [...equalDegree(g, d, p), ...equalDegree(divmodM(f, g, p)[0], d, p)];
@@ -147,9 +156,13 @@ function equalDegree(f, d, p) {
   }
 }
 
-/** Monic irreducible factors of a monic square-free f mod p. */
+/** Monic irreducible factors of f mod p; f must be square-free mod p (a RangeError says when it is not). */
 export function factorModP(f, p) {
-  f = monicM(modP(f, p), p);
+  p = BigInt(p);
+  f = monicM(modP(f.map(BigInt), p), p);
+  if (f.length < 2) return [];
+  const df = modP(derivative(f), p);
+  if (!df.length || gcdM(f, df, p).length > 1) throw new RangeError(`not square-free mod ${p}`);
   return distinctDegree(f, p).flatMap(([g, d]) => equalDegree(g, d, p));
 }
 

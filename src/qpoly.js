@@ -101,7 +101,7 @@ export function formatP(p, v = "x") {
     const neg = n < 0n;
     const a = neg ? -n : n;
     const coef = d === 1n ? `${a}` : `${a}/${d}`;
-    const mono = i === 0 ? coef : `${a === 1n && d === 1n ? "" : coef}${v}${i > 1 ? toSup(i) : ""}`;
+    const mono = i === 0 ? coef : `${a === 1n && d === 1n ? "" : d === 1n ? coef : `(${coef})`}${v}${i > 1 ? toSup(i) : ""}`;
     parts.push({ neg, mono });
   }
   return parts.map((t, k) => (k === 0 ? (t.neg ? "−" : "") + t.mono : `${t.neg ? " − " : " + "}${t.mono}`)).join("");

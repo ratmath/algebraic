@@ -71,7 +71,16 @@ export function roots(coeffs, { complex = false } = {}) {
     const rs = complex ? rootsOfIrreducible(f) : isolate(f);
     for (const value of rs) out.push({ value, multiplicity });
   }
-  const real = out.filter((r) => isReal(r.value)).sort((x, y) => compare(x.value, y.value));
+  // distinct roots, so refining their intervals always separates them (no resultants needed)
+  const apart = (a, b) => {
+    for (let bits = 8; ; bits *= 2) {
+      const { re: A } = box(a, bits);
+      const { re: B } = box(b, bits);
+      if (cmp(A[1], B[0]) < 0) return -1;
+      if (cmp(B[1], A[0]) < 0) return 1;
+    }
+  };
+  const real = out.filter((r) => isReal(r.value)).sort((x, y) => apart(x.value, y.value));
   return [...real, ...out.filter((r) => !isReal(r.value))];
 }
 
@@ -510,7 +519,7 @@ export function format(a, { digits = 12 } = {}) {
     return s.toString(digits);
   }
   if (degree(a.poly) === 2) return a.toString(digits);
-  if (degree(a.poly) <= 8) {
+  if (degree(a.poly) <= 4) {
     // parts with exact forms, such as ∛i = √3/2 + (1/2)i
     const x = re(a);
     const y = im(a);

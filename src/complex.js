@@ -117,6 +117,11 @@ export class ComplexAlgebraic {
    */
   toString(digits = 10) {
     if (degree(this.poly) === 2) return formatComplex(quadraticParts(this.poly, this.#imSign() * (this.poly[2] > 0n ? 1 : -1)));
+    return this.toDecimal(digits);
+  }
+
+  /** Certified digits for each part, "a + bi…", the last digit off by at most one unit. */
+  toDecimal(digits = 10) {
     const reS = certifiedDecimal(() => this.re, (b) => this.refine(b), digits);
     const imS = certifiedDecimal(() => this.im, (b) => this.refine(b), digits);
     const neg = imS.startsWith("−");

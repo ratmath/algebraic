@@ -48,6 +48,8 @@ describe("factoring over the integers", () => {
   test("mod p", () => {
     expect(factorModP(big([1, 0, 1]), 5n).length).toBe(2); // x² + 1 = (x − 2)(x − 3) mod 5
     expect(factorModP(big([1, 0, 1]), 7n).length).toBe(1);
+    expect(factorModP(big([0, 1, ...Array(14).fill(0), 1]), 2n).map((f) => f.length - 1)).toEqual([1, 1, 2, 4, 4, 4]); // x¹⁶ + x over F₂
+    expect(() => factorModP(big([1, 0, 0, 0, 1]), 2n)).toThrow(); // (x + 1)⁴ mod 2
   });
 });
 
