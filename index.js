@@ -20,3 +20,4 @@ export * as poly from "./src/poly.js";
 export * as qpoly from "./src/qpoly.js";
 export * as interval from "./src/interval.js";
 export { cosPi, sinPi, tanPi, rootOfUnity, rootsOfUnity, cyclotomic, chebyshevT, cosMinimal } from "./src/trig.js";
+export { continuedFraction, convergents, fromContinuedFraction, periodicContinuedFraction, pell, fundamentalUnit, fromQuadratic } from "./src/cf.js";
