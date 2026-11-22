@@ -11,7 +11,7 @@ import { AlgebraicReal, isolate, primitive, degree, signAt, squareFree } from ".
 import { ComplexAlgebraic, certifyComplexRoots } from "./complex.js";
 import { factor } from "./factor.js";
 import { reduce, addQ, subQ, mulQ, divQ, toPair, sqrtFloor, detInt } from "./q.js";
-import { quadraticParts, realSide, formatReal, fmtQ, joinParts } from "./radical.js";
+import { quadraticParts, realSide, formatReal, fmtQ, joinParts, nestedRadical } from "./radical.js";
 import { ivAdd, ivSub, ivMul } from "./interval.js";
 
 export const MAX_DEGREE = 64;
@@ -499,6 +499,14 @@ export function format(a, { digits = 12 } = {}) {
       const side = realSide(s.poly, () => [s.lo, s.hi], (b) => s.refine(b));
       return formatReal(quadraticParts(s.poly, side));
     }
+    if (degree(s.poly) === 4) {
+      // a nested radical ±√(A + B√d)/C when the square is quadratic, such as cos(π/8) = √(2 + √2)/2
+      const sq = mul(s, s);
+      if (degree(sq.poly) === 2) {
+        const side = realSide(sq.poly, () => [sq.lo, sq.hi], (b) => sq.refine(b));
+        return (sign(s) < 0 ? "−" : "") + nestedRadical(quadraticParts(sq.poly, side));
+      }
+    }
     return s.toString(digits);
   }
   if (degree(a.poly) === 2) return a.toString(digits);
@@ -506,12 +514,10 @@ export function format(a, { digits = 12 } = {}) {
     // parts with exact forms, such as ∛i = √3/2 + (1/2)i
     const x = re(a);
     const y = im(a);
-    const quad = (v) => v.rational || degree(simplify(v).poly) === 2;
-    if (quad(x) && quad(y)) {
-      const reS = x.rational && x.rational[0] === 0n ? "" : format(x);
-      const negIm = sign(y) < 0;
-      return joinParts(reS, negIm, format(negIm ? neg(y) : y));
-    }
+    const negIm = sign(y) < 0;
+    const reS = x.rational && x.rational[0] === 0n ? "" : format(x);
+    const imS = format(negIm ? neg(y) : y);
+    if (!reS.endsWith("…") && !imS.endsWith("…")) return joinParts(reS, negIm, imS);
   }
   return a.toString(digits);
 }

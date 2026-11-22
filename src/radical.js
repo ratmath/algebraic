@@ -94,6 +94,8 @@ export function formatComplex({ p, q, d, r }) {
 /** i times a positive coefficient written by formatReal: "i", "3i", "3i/4", "i√3/2", "i(1 + √5)/4". */
 export function imaginary(c) {
   if (c === "1") return "i";
+  const m = /^\d*√/.exec(c);
+  if (m) return `${c.slice(0, m[0].length - 1)}i${c.slice(m[0].length - 1)}`;
   if (c.startsWith("(")) return `i${c}`;
   if (c.includes(" ")) return `i(${c})`;
   if (c.startsWith("1/")) return `i${c.slice(1)}`;
@@ -134,4 +136,47 @@ export function certifiedDecimal(get, refine, digits = 12) {
   let str = k.toString().padStart(frac + 1, "0");
   if (frac) str = `${str.slice(0, -frac)}.${str.slice(-frac)}`;
   return `${neg && /[1-9]/.test(str) ? "−" : ""}${str}`;
+}
+
+/** √((p + q√d)/r) written as k√(A + B√d)/C with integers, as small as square-free splitting allows. */
+export function nestedRadical({ p, q, d, r }) {
+  // smallest C with C²·p/r and C²·q/r integers
+  const rr = r / (gcd(gcd(p, q), r) || 1n);
+  const [s0, t0] = squarefreeSplit(rr);
+  const C = s0 * t0;
+  let A = (C * C * p) / r;
+  let B = (C * C * q) / r;
+  // pull a square out of the radicand
+  const [k] = squarefreeSplit(gcd(A, B) || 1n);
+  A /= k * k;
+  B /= k * k;
+  // denest: √(A + B√d) = √((A + c)/2) ± √((A − c)/2) when A² − B²d = c²
+  const N = A * A - B * B * d;
+  if (d > 0n && N >= 0n) {
+    const c = sqrtFloor(N);
+    if (c * c === N) {
+      const [s1, t1] = squarefreeSplit(2n * (A + c));
+      const [s2, t2] = squarefreeSplit(2n * (A - c));
+      let terms = [[k * s1, t1], [(B < 0n ? -1n : 1n) * k * s2, t2]].filter(([a, t]) => a !== 0n && t !== 0n);
+      if (terms.length === 2 && terms[0][1] === terms[1][1]) terms = [[terms[0][0] + terms[1][0], terms[0][1]]];
+      let den = 2n * C;
+      const g = terms.reduce((acc, [a]) => gcd(acc, a), den) || 1n;
+      terms = terms.map(([a, t]) => [a / g, t]);
+      den /= g;
+      const rad = ([a, t], first) => {
+        const mag = a < 0n ? -a : a;
+        const body = t === 1n ? `${mag}` : `${mag === 1n ? "" : mag}√${t}`;
+        return first ? `${a < 0n ? "−" : ""}${body}` : ` ${a < 0n ? "−" : "+"} ${body}`;
+      };
+      const num = terms.map((tm, i) => rad(tm, i === 0)).join("");
+      if (den === 1n) return num;
+      return terms.length > 1 ? `(${num})/${den}` : `${num}/${den}`;
+    }
+  }
+  const [kk, CC] = (() => {
+    const g = gcd(k, C) || 1n;
+    return [k / g, C / g];
+  })();
+  const inner = formatReal({ p: A, q: B, d, r: 1n });
+  return `${kk === 1n ? "" : kk}√(${inner})${CC === 1n ? "" : `/${CC}`}`;
 }
