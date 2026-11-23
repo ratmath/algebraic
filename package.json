@@ -42,5 +42,8 @@
   "homepage": "https://github.com/ratmath/algebraic#readme",
   "dependencies": {
     "@ratmath/core": "^0.8.0"
+  },
+  "devDependencies": {
+    "katex": "0.19.1"
   }
 }

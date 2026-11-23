@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Finite Fields</title>
+<meta name="description" content="Integers mod p, GF(p^k), generators, discrete logarithms and the number theory under them.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Structures</div>
+<h1>Finite fields and modular arithmetic</h1>
+<p class="lede">Arithmetic modulo a prime p is a field with p elements: every nonzero number has an inverse. Polynomials over it, taken modulo an irreducible polynomial of degree k, give a field with pᵏ elements. Every finite field is one of these.</p>
+
+<h2>F_p and its multiplicative group</h2>
+<p>The nonzero elements of F_p form a cyclic group of order p − 1: some <strong>primitive root</strong> g has every nonzero element as a power gˣ. The exponent x is the <strong>discrete logarithm</strong>, easy to state and hard to compute for large p, which is what makes Diffie–Hellman work. The library finds orders by dividing p − 1 by its prime factors while the power stays 1, primitive roots by testing g^((p−1)/q) ≠ 1 for each prime q dividing p − 1, and logarithms by baby-step giant-step in about √p steps.</p>
+<div data-expr="primroot(101)" data-examples="order(2, 101)|order(10, 7)|sqrtmod(10, 13)|sqrtmod(5, 13)|factor(2^67 - 1)|phi(360)|isprime(2^61 - 1)|gcd(1071, 462)"></div>
+<p>Square roots mod p use Tonelli–Shanks; whether one exists is the Legendre symbol (a/p), computed by quadratic reciprocity. Integers are factored by trial division and then Pollard's rho, which found 2⁶⁷ − 1 = 193707721 · 761838257287, the factorisation Frank Cole multiplied out on a blackboard in 1903.</p>
+
+<h2>GF(pᵏ)</h2>
+<p>For k > 1 an element is a polynomial of degree below k with coefficients mod p; the library picks the first monic irreducible modulus of degree k automatically (or takes yours). Multiplication reduces modulo it. The table shows the field's multiplication or its powers of a generator, which list every nonzero element exactly once.</p>
+<div class="demo" id="gf-demo">
+  <div class="demo-title">A small field</div>
+  <div class="demo-row">
+    <label>p <input class="text" id="gf-p" type="number" value="3" min="2" style="width:5rem"></label>
+    <label>k <input class="text" id="gf-k" type="number" value="2" min="1" max="6" style="width:5rem"></label>
+    <label>show <select id="gf-view"><option value="pow">powers of a generator</option><option value="mul">multiplication table</option></select></label>
+    <button id="gf-go">Build</button>
+  </div>
+  <div class="out" id="gf-out"></div>
+</div>
+
+<h2>Uses</h2>
+<p>Finite fields are where the <a href="factoring.html">factoring</a> algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem, <code>crt(residues, moduli)</code>. The field objects plug into its field-generic algorithms directly.</p>
+
+<h2>In code</h2>
+<pre><code>import { primeField, galoisField, factorInteger, crt, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
+const F = primeField(101);
+F.inv(2n);                 // 51n
+F.order(2n);               // 100n: 2 is a primitive root mod 101
+F.log(5n);                 // x with 2ˣ = 5
+const G = galoisField(2, 8);          // GF(256), with the first irreducible modulus of degree 8
+const g = G.primitive();
+G.format(G.pow(g, 10));
+G.log(G.mul(g, g));        // 2n
+factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]
+crt([2, 3, 2], [3, 5, 7]);      // { x: 23n, m: 105n }</code></pre>
+<template data-runbox>
+const F = primeField(101);
+PRINT("1/2 mod 101 =", F.inv(2n), "  order of 2:", F.order(2n));
+const G = galoisField(2, 8);
+const g = G.primitive();
+PRINT("in GF(256), g¹⁰ =", G.format(G.pow(g, 10)));
+PRINT("600851475143 =", factorInteger(600851475143n).map((f) => `${f.prime}${f.exponent > 1 ? "^" + f.exponent : ""}`).join(" · "));
+crt([2, 3, 2], [3, 5, 7])
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, later } from "./assets/site.js";
+const out = document.getElementById("gf-out");
+const go = () => later(out, () => {
+  const p = BigInt(document.getElementById("gf-p").value || 2);
+  const k = Math.max(1, Math.min(6, Number(document.getElementById("gf-k").value) || 1));
+  const G = A.galoisField(p, k);
+  if (G.size > 400n) throw new Error("pick a field with at most 400 elements for the table");
+  const fmt = (a) => (k === 1 ? String(a) : G.format(a));
+  const mod = k === 1 ? "" : "modulus " + A.qpoly.formatP(G.modulus.map((c) => [c, 1n]), "a");
+  const head = h("div", { class: "small muted" }, `GF(${p}${k > 1 ? "^" + k : ""}) has ${G.size} elements. ${mod}`);
+  if (document.getElementById("gf-view").value === "pow") {
+    const g = G.primitive();
+    const tbl = h("table", { class: "data" }, h("tr", {}, h("th", {}, "x"), h("th", {}, "gˣ")));
+    let e = G.one;
+    for (let x = 0n; x < G.size - 1n; x += 1n) {
+      tbl.append(h("tr", {}, h("td", {}, String(x)), h("td", {}, fmt(e))));
+      e = G.mul(e, g);
+    }
+    return h("div", {}, head, h("div", { class: "small muted" }, "generator g = " + fmt(g) + ", order " + G.order(g)), h("div", { class: "tablewrap" }, tbl));
+  }
+  if (G.size > 32n) throw new Error("the multiplication table is limited to 32 elements");
+  const els = G.elements();
+  const tbl = h("table", { class: "data" }, h("tr", {}, h("th", {}, "×"), els.map((e) => h("th", {}, fmt(e)))));
+  for (const a of els) tbl.append(h("tr", {}, h("th", {}, fmt(a)), els.map((b) => h("td", {}, fmt(G.mul(a, b))))));
+  return h("div", {}, head, h("div", { class: "tablewrap" }, tbl));
+});
+document.getElementById("gf-go").onclick = go;
+go();
+</script>
+</body>
+</html>

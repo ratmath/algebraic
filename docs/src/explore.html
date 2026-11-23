@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Algebraic Explorer</title>
+<meta name="description" content="A free-form exact calculator for algebraic numbers, polynomials and fields.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article class="wide">
+<div class="eyebrow">Explore</div>
+<h1>Explore</h1>
+<p class="lede">An exact calculator for everything in the library. Type an expression and press Enter (Shift+Enter for a new line). Numbers are exact, <code>x</code> makes polynomials, and <code>name = …</code> keeps a value for later lines.</p>
+<div class="explore-layout">
+  <div class="repl">
+    <div class="repl-input"><textarea class="text" id="repl-in" rows="2" spellcheck="false" aria-label="Expression">a = 2^(1/3)</textarea><button id="repl-go">Run</button></div>
+    <div class="demo-row"><button class="ghost" id="repl-clear">Clear</button><span class="small muted">Click an entry to edit it again.</span></div>
+    <div class="repl-log" id="repl-log" aria-live="polite"></div>
+  </div>
+  <div class="palette" id="palette">
+    <details class="help" open><summary>How to write things</summary>
+      <p class="small">Fractions and decimals are exact: <code>0.1</code> is 1/10. Powers with a fractional exponent are principal roots: <code>(-8)^(1/3)</code>, <code>i^(1/2)</code>. Multiplication can be implicit: <code>2x^3</code>, <code>3i</code>, <code>2sqrt(2)</code>. Polynomials use <code>x</code>: <code>roots(x^3 - 2)</code>. Pass digits to <code>recognize</code> in quotes to keep every digit.</p>
+    </details>
+  </div>
+</div>
+<template data-runbox>
+// The explorer's language calls these functions; here they are in JavaScript.
+const x = add(sqrt(fromRational(2)), sqrt(fromRational(3)));
+PRINT("x =", format(x), "≈", x.toString(15));
+PRINT("1/x =", format(div(fromRational(1), x)));
+PRINT("x is a root of", polys.format(x.poly));
+recognize(x.toString(30).replace("…", ""))?.poly
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, run, render, later } from "./assets/site.js";
+const env = {};
+const input = document.getElementById("repl-in");
+const log = document.getElementById("repl-log");
+const GROUPS = [
+  ["Numbers", ["sqrt(2) + sqrt(3)", "(sqrt(2) + sqrt(3))^2", "1/(1 + 2^(1/3))", "minpoly(a + 1/a)", "digits(a, 60)", "sqrt(5 + 2sqrt(6))"]],
+  ["Complex", ["(1 + i)^5", "sqrt(-3 + 4i)", "i^(1/3)", "abs(1 + 2i)", "(2 + i)/(1 - i)", "croots(x^3 - 2)"]],
+  ["Angles", ["cospi(1/5)", "sinpi(1/12)", "cospi(2/7)", "unity(8, 3)", "cyclotomic(30)", "tanpi(1/8)"]],
+  ["Polynomials", ["roots(x^5 - x - 1)", "factor(x^8 - 1)", "disc(x^3 + x + 1)", "pf(1, x^4 - 1)", "gcd(x^6 - 1, x^4 - 1)", "at(x^4 - 10x^2 + 1, sqrt(2) + sqrt(3))"]],
+  ["Galois", ["galois(x^3 - 2)", "galois(x^4 + 1)", "galois(x^5 - 2)", "galois(x^5 - x - 1)"]],
+  ["Continued fractions", ["cf(a, 20)", "period(sqrt(13))", "convergents(sqrt(2), 8)", "pell(61)", "unit(94)"]],
+  ["Integers", ["factor(2^64 + 1)", "primroot(1009)", "sqrtmod(2, 1009)", "phi(1000)", "isprime(2^89 - 1)"]],
+  ["Recognise", ["recognize(\"1.6180339887\")", "recognize(\"0.9238795325112867\")", "recognize(\"1.324717957244746\")"]],
+];
+const palette = document.getElementById("palette");
+for (const [name, xs] of GROUPS) {
+  palette.append(h("div", { class: "grp" }, h("span", {}, name), h("div", { class: "btns" }, xs.map((x) => h("button", { class: "chipbtn", onclick: () => { input.value = x; go(); } }, x)))));
+}
+function entry(src) {
+  const out = h("div", { class: "out" });
+  const box = h("div", { class: "entry" }, h("button", { class: "src", title: "Edit again", onclick: () => { input.value = src; input.focus(); } }, src), out);
+  log.prepend(box);
+  later(out, () => {
+    const lines = src.split(/\n/).map((s) => s.trim()).filter(Boolean);
+    let res = null;
+    for (const line of lines) res = run(line, env);
+    const node = render(res.result);
+    return res.name ? h("div", {}, h("div", { class: "small muted" }, res.name + " ="), node) : node;
+  });
+  setTimeout(() => box.classList.toggle("err", out.classList.contains("err")), 60);
+}
+function go() {
+  const src = input.value.trim();
+  if (!src) return;
+  entry(src);
+  input.value = "";
+}
+document.getElementById("repl-go").onclick = go;
+document.getElementById("repl-clear").onclick = () => log.replaceChildren();
+input.addEventListener("keydown", (e) => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); go(); }
+});
+go();
+</script>
+</body>
+</html>

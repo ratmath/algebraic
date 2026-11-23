@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -41,6 +41,16 @@ r.digitsNeeded;     // 6
 recognize("3.14159265358979");   // null: nothing small enough fits
 lll([[1n, 0n, 0n, 10000n], [0n, 1n, 0n, 14142n], [0n, 0n, 1n, 20000n]]);  // reduced basis</code></pre>
 <p class="small muted">Options: <code>{ maxDegree = 4, margin = 3 }</code>. The input can be a decimal string (a trailing "…" is allowed) or an interval <code>[lo, hi]</code>.</p>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const r = recognize("0.9238795325112867");
+PRINT("0.9238795325112867 looks like", format(r.value), "(cos(π/8))");
+PRINT("minimal polynomial:", r.poly, " digits used", r.digitsUsed, " needed", r.digitsNeeded);
+PRINT("π's digits:", recognize("3.14159265358979"));
+recognize("1.4142135623730951")?.poly</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>

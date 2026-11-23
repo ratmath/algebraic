@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -57,11 +57,24 @@ const G = NumberField.gaussian();     // Q(i)
 G.of([1, 2]).mul(G.of([1, 2])).toString();  // "−3 + 4i"
 const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
 C.gen.pow(3).toRational().toString(); // "2"</code></pre>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const K = NumberField.quadratic(2);   // Q(√2)
+const a = K.of([1, 1]);               // 1 + √2
+PRINT("1/a =", a.inv().toString(), "  a⁵ =", a.pow(5).toString());
+PRINT("norm", a.norm().toString(), " trace", a.trace().toString());
+const G = NumberField.gaussian();
+PRINT("(1 + 2i)² =", G.of([1, 2]).mul(G.of([1, 2])).toString());
+const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
+C.gen.pow(3).toString()</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>
 <script type="module">
-import { A, h, later } from "./assets/site.js";
+import { A, h, later } from "./assets/site.js?v=52d62eca40";
 const fields = {
   q2: () => A.NumberField.quadratic(2),
   q5: () => A.NumberField.quadratic(5),

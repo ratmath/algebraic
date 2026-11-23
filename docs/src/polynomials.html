@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Polynomial Toolkit</title>
+<meta name="description" content="Resultants, discriminants, Sturm root counts, interpolation and partial fractions over the rationals.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Polynomials</div>
+<h1>Polynomial toolkit</h1>
+<p class="lede">The tools the rest of the library is built from, exposed for direct use: exact polynomial arithmetic over Q, resultants and discriminants, root counting, interpolation and partial fractions. In the expression language, <code>x</code> is the variable: <code>(x + 1)^3</code> is a polynomial.</p>
+<div data-expr="(x + 1)^3 - (x - 1)^3" data-examples="(x^2 - 1)/(x - 1)|gcd(x^4 - 1, x^6 - 1)|deriv(x^5 - 3x + 1)|at(x^3 - 2, 2^(1/3))|at(x^2 + 1, i)"></div>
+
+<h2>Resultants</h2>
+<p>The resultant Res(p, q) is a single number, built from the coefficients alone (the determinant of the Sylvester matrix), that is 0 exactly when p and q have a common root. Over the roots,</p>
+<div class="math">Res(p, q) = lc(p)^deg q · lc(q)^deg p · Π (αᵢ − βⱼ)</div>
+<p>which is why resultants manufacture polynomials for sums and products of algebraic numbers: put a parameter t inside q and the resultant becomes a polynomial in t that vanishes at every αᵢ + βⱼ.</p>
+<div data-expr="res(x^2 - 2, x^2 - 3)" data-examples="res(x^2 - 2, x^3 - 2x)|res(x^3 - x - 1, 3x^2 - 1)"></div>
+
+<h2>Discriminants</h2>
+<p>The discriminant of p (degree n, leading coefficient a) is (−1)^(n(n−1)/2)·Res(p, p′)/a = a^(2n−2)·Π_(i<j) (αᵢ − αⱼ)². It is 0 exactly when p has a repeated root. For x² + bx + c it is the familiar b² − 4c. Its sign tells how many complex roots a real polynomial has (negative when the number of complex pairs is odd), and whether it is a perfect square tells whether the Galois group consists of even permutations only.</p>
+<div data-expr="disc(x^3 - x - 1)" data-examples="disc(x^2 + x + 1)|disc(x^3 - 3x + 1)|disc((x - 1)^2 (x + 3))|disc(x^5 - x - 1)"></div>
+
+<h2>Counting real roots</h2>
+<p>A Sturm sequence counts distinct real roots in any interval (a, b] exactly, without finding them: count sign changes of p, p′, −rem(p, p′), … at a and at b, and subtract. <code>countroots(p, a, b)</code> works on the square-free factors, so repeated roots count once.</p>
+<div data-expr="countroots(x^5 - 5x + 1, 0, 2)" data-examples="countroots(x^5 - 5x + 1)|countroots(x^4 - 10x^2 + 1, 0, 3)|countroots((x^2 - 2)^3)"></div>
+
+<h2>Interpolation</h2>
+<p>Through n points with distinct x there is exactly one polynomial of degree below n. Newton's divided differences build it with exact rationals: <code>interpolate([[0, 1], [1, 3], [2, 7]])</code> gives x² + x + 1.</p>
+
+<h2>Partial fractions</h2>
+<p>A fraction num/den splits into a polynomial plus a sum of simple pieces, one group for each irreducible factor f of den with multiplicity e:</p>
+<div class="math">num/den = q(x) + Σ_f  Σ_(k ≤ e)  aₖ(x)/f(x)ᵏ,   deg aₖ &lt; deg f</div>
+<p>The library factors den over the integers, splits the fraction between coprime factors with the extended Euclidean algorithm (s·U + t·V = 1 gives N/(UV) = Nt/U + Ns/V), and then expands each A/fᵉ in powers of f by repeated division. This is the step behind integrating rational functions.</p>
+<div data-expr="pf(1, x^3 - x)" data-examples="pf(x^4 + 1, x^2 (x^2 + 1))|pf(2x + 3, (x - 1)^3)|pf(x^5, x^2 - 3x + 2)|pf(1, x^4 + 1)"></div>
+
+<h2>In code</h2>
+<pre><code>import { polys, resultant, discriminant, countRoots, interpolate, partialFractions } from "@ratmath/algebraic";
+resultant([-2, 0, 1], [-3, 0, 1]).toString();  // "1"
+discriminant([-1, -1, 0, 1]).toString();       // "-23"
+countRoots([1, -5, 0, 0, 0, 1], 0, 2);          // 2
+interpolate([[0, 1], [1, 3], [2, 7]]).map(String);  // ["1", "1", "1"]
+partialFractions([1], [0, -1, 0, 1]);
+// { polynomial: [], terms: [{ factor: [-1n, 1n], power: 1, numerator: [1/2] }, …] }
+polys.gcdExt([-1, 0, 1], [1, 1]);   // { gcd, s, t } with s·p + t·q = gcd
+polys.format(polys.compose([0, 0, 1], [1, 1]));  // "x² + 2x + 1"</code></pre>
+<p class="small muted">Inputs: coefficient arrays, constant first, of numbers, BigInts, strings like "3/4" or Core Rationals. Outputs are arrays of Core Rationals.</p>
+<template data-runbox>
+PRINT("resultant(x² − 2, x² − 3) =", resultant([-2, 0, 1], [-3, 0, 1]));
+PRINT("discriminant(x³ − x − 1) =", discriminant([-1, -1, 0, 1]));
+PRINT("roots of x⁵ − 5x + 1 in [0, 2]:", countRoots([1, -5, 0, 0, 0, 1], 0, 2));
+PRINT("interpolate (0,1), (1,3), (2,7):", interpolate([[0, 1], [1, 3], [2, 7]]));
+PRINT(polys.format(polys.compose([0, 0, 1], [1, 1])));
+partialFractions([1], [0, -1, 0, 1])
+</template>
+</article>
+</main>
+</div>
+</body>
+</html>

@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -51,11 +51,22 @@ re(complex(1, 2)).toRational();     // 1
 const [, w] = roots([1, 1, 1], { complex: true }).map((r) =&gt; r.value);
 w.toString();                       // "−1/2 − i√3/2"
 w.box(64);                          // { re: [lo, hi], im: [lo, hi] } as Core Rationals</code></pre>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">PRINT("√(−3 + 4i) =", format(sqrt(complex(-3, 4))));
+PRINT("∛i =", format(nthRoot(I(), 3)));
+PRINT("|1 + i| =", format(abs(complex(1, 1))));
+const [, w] = roots([1, 1, 1], { complex: true }).map((r) =&gt; r.value);
+PRINT("a cube root of unity:", w.toString());
+w.box(32)</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>
 <script type="module">
-import { A, h, plane, coords, later, run, render } from "./assets/site.js";
+import { A, h, plane, coords, later, run, render } from "./assets/site.js?v=52d62eca40";
 const input = document.getElementById("plane-in");
 const out = document.getElementById("plane-out");
 const canvas = document.getElementById("plane");

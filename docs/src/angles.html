@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Angles and Roots of Unity</title>
+<meta name="description" content="Exact cos, sin and tan at rational multiples of π, roots of unity and cyclotomic polynomials.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Numbers</div>
+<h1>Angles and roots of unity</h1>
+<p class="lede">cos(π/5) is (1 + √5)/4. cos(2π/7) is a root of 8x³ + 4x² − 4x − 1. Every cosine and sine of a rational multiple of π is an algebraic number, and the library gives it exactly, without ever using π.</p>
+
+<h2>Roots of unity and cyclotomic polynomials</h2>
+<p>The n-th roots of unity are the n solutions of zⁿ = 1, the points e^(2πik/n) evenly spaced on the unit circle. Each one is <em>primitive</em> of some order d dividing n, and the primitive d-th roots are exactly the roots of the <strong>cyclotomic polynomial</strong> Φ_d, which has integer coefficients and is irreducible. So</p>
+<div class="math">xⁿ − 1 = Π_(d | n) Φ_d(x),   Φ₁ = x − 1,  Φ₂ = x + 1,  Φ₄ = x² + 1,  Φ₁₂ = x⁴ − x² + 1</div>
+<p>and Φₙ is found by dividing xⁿ − 1 by the Φ_d of its smaller divisors. Its degree is φ(n), Euler's totient. The coefficients are usually 0 and ±1; Φ₁₀₅ is the first with a 2 in it.</p>
+<div class="demo" id="unity-demo">
+  <div class="demo-title">The n-th roots of unity</div>
+  <div class="demo-row"><label>n <input class="text" id="unity-n" type="number" min="1" max="60" value="12" style="width:6rem"></label><button id="unity-go">Show</button></div>
+  <div class="split"><canvas class="plane" id="unity-plane"></canvas><div class="out" id="unity-out"></div></div>
+</div>
+
+<h2>Cosines without π</h2>
+<p>Write c = cos θ. Then cos(nθ) = Tₙ(c), with Tₙ the Chebyshev polynomial (T₀ = 1, T₁ = x, Tₙ₊₁ = 2xTₙ − Tₙ₋₁). For θ = 2πj/n that gives Tₙ(c) = 1, which only says c is one of the cosines cos(2πj/n). To get the right one without π, the library uses two facts:</p>
+<ul>
+  <li>Φₙ is palindromic, so x^(−φ(n)/2)·Φₙ(x) is a polynomial in x + 1/x = 2cos θ. That polynomial, with 2c substituted, is the minimal polynomial of cos(2π/n), of degree φ(n)/2.</li>
+  <li>Its roots are cos(2πj/n) for the j between 0 and n/2 that are coprime to n, and cosine decreases there. So the k-th largest root is the k-th such j.</li>
+</ul>
+<p>So isolating the real roots (Sturm), sorting them, and counting picks the value exactly. sin(πr) is cos(π(1/2 − r)) and tan is their quotient.</p>
+<div data-expr="cospi(2/7)" data-examples="cospi(1/5)|cospi(1/8)|sinpi(1/12)|tanpi(1/12)|sinpi(1/5)|cospi(1/17)|cospi(7/6)|minpoly(cospi(2/7))"></div>
+
+<h2>When there is a radical form</h2>
+<p>Gauss showed that cos(2π/n) can be written with square roots alone exactly when φ(n) is a power of 2, which is why a regular 17-gon can be drawn with ruler and compass but a 7-gon cannot. <code>format</code> finds the forms of degree 2 and 4: cos(π/5) = (1 + √5)/4, cos(π/8) = √(2 + √2)/2, sin(π/12) = (√6 − √2)/4. A nested radical √(A + B√d) is <em>denested</em> into √u ± √v whenever A² − B²d is a square. Higher degrees print as certified digits.</p>
+<div data-expr="unity(8, 3)" data-examples="unity(3)|unity(5)|unity(12, 5)|(unity(5))^5|cyclotomic(12)|cyclotomic(105)|chebyshev(5)"></div>
+
+<h2>In code</h2>
+<pre><code>import { cosPi, sinPi, tanPi, rootOfUnity, rootsOfUnity, cyclotomic, format } from "@ratmath/algebraic";
+format(cosPi("1/5"));          // "(1 + √5)/4"
+format(sinPi("1/12"));         // "(√6 − √2)/4"
+cosPi("2/7").poly;             // [-1n, -4n, 4n, 8n]
+format(rootOfUnity(8, 3));     // "−√2/2 + i√2/2"
+cyclotomic(12);                // [1n, 0n, -1n, 0n, 1n]</code></pre>
+<template data-runbox>
+PRINT("cos(π/5) =", format(cosPi("1/5")));
+PRINT("sin(π/12) =", format(sinPi("1/12")));
+PRINT("cos(2π/7) is a root of", polys.format(cosPi("2/7").poly));
+PRINT("8th roots of unity:", rootsOfUnity(8).map(format));
+cyclotomic(12)
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, plane, coords, later, render } from "./assets/site.js";
+const nIn = document.getElementById("unity-n");
+const out = document.getElementById("unity-out");
+const go = () => later(out, () => {
+  const n = Math.max(1, Math.min(60, Number(nIn.value) || 1));
+  const zs = A.rootsOfUnity(n);
+  plane(document.getElementById("unity-plane"), zs.map((z, k) => ({ ...coords(z), label: n <= 16 ? String(k) : "" })), { unit: true, R: 1.25 });
+  const phi = A.cyclotomic(n);
+  const tbl = h("table", { class: "data" }, h("tr", {}, h("th", {}, "k"), h("th", {}, "e^(2πik/" + n + ")")));
+  zs.forEach((z, k) => tbl.append(h("tr", {}, h("td", {}, String(k)), h("td", {}, A.format(z, { digits: 8 })))));
+  return h("div", {}, h("div", { class: "small muted" }, "primitive ones are the roots of Φ" + n + " = " + A.qpoly.formatP(phi.map((c) => [c, 1n]))), h("div", { class: "tablewrap" }, tbl));
+});
+document.getElementById("unity-go").onclick = go;
+nIn.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+go();
+</script>
+</body>
+</html>

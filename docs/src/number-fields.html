@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Number Fields</title>
+<meta name="description" content="Number fields Q(α): closed, cheap exact arithmetic with norms, traces and embeddings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Structures</div>
+<h1>Number fields</h1>
+<p class="lede">Q(√2) is every number a + b√2 with rational a and b. Sums, products and quotients stay in that form, so arithmetic is just arithmetic on pairs of fractions. A number field Q(α) does the same for any algebraic α, and it is far cheaper than general algebraic arithmetic when all your numbers live in one field.</p>
+
+<h2>Polynomials modulo m</h2>
+<p>If m is the minimal polynomial of α, of degree n, then Q(α) = Q[x]/(m): every element is a polynomial in α of degree below n, and multiplication is polynomial multiplication followed by reduction modulo m (using m(α) = 0 to rewrite αⁿ). Inverses come from the extended Euclidean algorithm: since m is irreducible, any nonzero g has s·g + t·m = 1, so s is 1/g. Nothing here grows beyond n coefficients, unlike resultant arithmetic, whose degrees multiply.</p>
+<div class="demo" id="nf-demo">
+  <div class="demo-title">Compute in a field</div>
+  <div class="demo-row">
+    <label>field <select id="nf-field">
+      <option value="q2">Q(√2)</option><option value="q5">Q(√5)</option><option value="gi">Q(i), the Gaussian rationals</option><option value="q-3">Q(√−3)</option><option value="c2">Q(∛2)</option><option value="z7">Q(ζ₇), ζ₇ = e^(2πi/7)</option>
+    </select></label>
+  </div>
+  <div class="demo-row"><label style="flex:1">element, as coefficients of 1, α, α², … <input class="text grow" id="nf-el" value="1, 1" spellcheck="false"></label><label>power <input class="text" id="nf-k" type="number" value="5" style="width:5rem"></label><button id="nf-go">Compute</button></div>
+  <div class="out" id="nf-out"></div>
+</div>
+
+<h2>Norm and trace</h2>
+<p>Multiplying by an element g is a linear map on the basis 1, α, …, α^(n−1). Its determinant is the <strong>norm</strong> N(g) and its trace is the <strong>trace</strong> Tr(g); both are rational, and they equal the product and the sum of the n conjugates of g. In Q(√d), N(a + b√d) = a² − db², and N(g·h) = N(g)·N(h). The units of the ring of integers are exactly the integral elements of norm ±1; the <a href="continued-fractions.html">continued fraction page</a> finds them for Q(√d).</p>
+<p>In Q(i) the norm of a + bi is a² + b², which is why a prime p ≡ 1 mod 4 is a sum of two squares: it stops being prime in Z[i] and splits as (a + bi)(a − bi).</p>
+
+<h2>Embeddings</h2>
+<p>A field element is an abstract polynomial in α. <code>toAlgebraic()</code> turns it into an actual number by substituting a chosen root of m, the <em>embedding</em>. Q(√2) uses the positive root, Q(i) the root with positive imaginary part, and you can pick any root by index when making a field.</p>
+
+<h2>A field object</h2>
+<p>Every NumberField is also a plain field object <code>{ zero, one, add, sub, mul, div, neg, sign }</code>, the interface that @ratmath/linalg's field-generic algorithms (Gaussian elimination, determinants, inverses) run on. So a matrix over Q(√2) is solved with the same code as one over Q.</p>
+
+<h2>In code</h2>
+<pre><code>import { NumberField } from "@ratmath/algebraic";
+const K = NumberField.quadratic(2);   // Q(√2)
+const a = K.of([1, 1]);               // 1 + √2
+a.inv().toString();                   // "−1 + √2"
+a.pow(5).toString();                  // "41 + 29√2"
+a.norm().toString();                  // "-1"
+a.trace().toString();                 // "2"
+a.toAlgebraic().toString(20);         // "2.41421356237309504880…"
+
+const G = NumberField.gaussian();     // Q(i)
+G.of([1, 2]).mul(G.of([1, 2])).toString();  // "−3 + 4i"
+const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
+C.gen.pow(3).toRational().toString(); // "2"</code></pre>
+<template data-runbox>
+const K = NumberField.quadratic(2);   // Q(√2)
+const a = K.of([1, 1]);               // 1 + √2
+PRINT("1/a =", a.inv().toString(), "  a⁵ =", a.pow(5).toString());
+PRINT("norm", a.norm().toString(), " trace", a.trace().toString());
+const G = NumberField.gaussian();
+PRINT("(1 + 2i)² =", G.of([1, 2]).mul(G.of([1, 2])).toString());
+const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
+C.gen.pow(3).toString()
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, later } from "./assets/site.js";
+const fields = {
+  q2: () => A.NumberField.quadratic(2),
+  q5: () => A.NumberField.quadratic(5),
+  gi: () => A.NumberField.gaussian(),
+  "q-3": () => A.NumberField.quadratic(-3),
+  c2: () => new A.NumberField([-2, 0, 0, 1], { name: "∛2" }),
+  z7: () => new A.NumberField([1, 1, 1, 1, 1, 1, 1], { name: "ζ" }),
+};
+const examples = { q2: "1, 1", q5: "1/2, 1/2", gi: "1, 2", "q-3": "1/2, 1/2", c2: "1, 1, 1", z7: "1, 1" };
+const cache = {};
+const sel = document.getElementById("nf-field");
+const el = document.getElementById("nf-el");
+const kIn = document.getElementById("nf-k");
+const out = document.getElementById("nf-out");
+const go = () => later(out, () => {
+  const K = (cache[sel.value] ??= fields[sel.value]());
+  const g = K.of(el.value.split(",").map((s) => s.trim()).filter(Boolean));
+  const k = Number(kIn.value) || 1;
+  const rows = [
+    ["element g", String(g)],
+    ["field", String(K)],
+    ["g⁻¹", g.isZero() ? "—" : String(g.inv())],
+    ["g^" + k, String(g.pow(k))],
+    ["norm N(g)", String(g.norm())],
+    ["trace Tr(g)", String(g.trace())],
+    ["as a number", A.format(g.toAlgebraic())],
+  ];
+  return h("dl", { class: "kv" }, rows.flatMap(([a, b]) => [h("dt", {}, a), h("dd", {}, b)]));
+});
+sel.onchange = () => { el.value = examples[sel.value]; go(); };
+document.getElementById("nf-go").onclick = go;
+for (const x of [el, kIn]) x.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+go();
+</script>
+</body>
+</html>

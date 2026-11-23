@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -31,11 +31,22 @@
     </details>
   </div>
 </div>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">// The explorer's language calls these functions; here they are in JavaScript.
+const x = add(sqrt(fromRational(2)), sqrt(fromRational(3)));
+PRINT("x =", format(x), "≈", x.toString(15));
+PRINT("1/x =", format(div(fromRational(1), x)));
+PRINT("x is a root of", polys.format(x.poly));
+recognize(x.toString(30).replace("…", ""))?.poly</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>
 <script type="module">
-import { A, h, run, render, later } from "./assets/site.js";
+import { A, h, run, render, later } from "./assets/site.js?v=52d62eca40";
 const env = {};
 const input = document.getElementById("repl-in");
 const log = document.getElementById("repl-log");

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RatMath Algebraic</title>
+<meta name="description" content="Exact algebraic numbers, factoring, number fields and finite fields in JavaScript.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">@ratmath/algebraic</div>
+<h1>Square roots, cube roots and every other root, held exactly</h1>
+<p class="lede">A JavaScript library for algebraic numbers: the roots of polynomials with whole-number coefficients. √2 + √3, the cube roots of 2, cos(π/7) and i are values you can add, multiply, compare and test for equality with no rounding, and print to as many digits as you like.</p>
+
+<div data-expr="sqrt(2) + sqrt(3)" data-title="Try it" data-examples="(sqrt(2) + sqrt(3))^2|cospi(1/5)|(1 + i)^(1/3)|roots(x^5 - x - 1)|factor(x^6 - 1)|galois(x^4 - 2)|period(sqrt(7))|recognize(&quot;1.6180339887&quot;)"></div>
+
+<h2>How a number is held</h2>
+<p>An algebraic number is stored as a polynomial with integer coefficients plus a small region that contains exactly one of its roots: an interval for a real root, a box in the complex plane for the others. The polynomial is the exact part; the region only says which root is meant, and it can be shrunk whenever more digits are wanted.</p>
+<p>Arithmetic builds a new polynomial for the result (a resultant), factors it, and keeps the factor the answer is a root of, so every number carries its <em>minimal polynomial</em>. That is why the library can say exactly that (√2 + √3)² = 5 + 2√6, or that a messy expression is precisely 0.</p>
+
+<h2>A first program</h2>
+<pre><code>import { sqrt, add, mul, fromRational, format, roots, cosPi, factor, galoisGroup } from "@ratmath/algebraic";
+
+const r2 = sqrt(fromRational(2));
+const s = add(r2, sqrt(fromRational(3)));
+s.toString(20);                 // "3.14626436994197234232…"   certified digits
+s.poly;                         // [1n, 0n, -10n, 0n, 1n]      x⁴ − 10x² + 1
+format(mul(s, s));              // "5 + 2√6"
+format(cosPi("1/5"));           // "(1 + √5)/4"
+roots([-2, 0, 0, 1], { complex: true }).map((r) =&gt; format(r.value));
+                                // ∛2 and its two complex partners
+factor([-1, 0, 0, 0, 0, 0, 1]); // x⁶ − 1 into four irreducible factors
+galoisGroup([-2, 0, 0, 0, 1]).name;  // "D4"</code></pre>
+<p class="small muted">Polynomials are arrays of coefficients, constant term first: <code>[-2, 0, 0, 1]</code> is x³ − 2. Coefficients can be numbers, BigInts, strings like <code>"3/4"</code> or Core Rationals.</p>
+
+<h2>What is in it</h2>
+<ul>
+  <li><strong>Algebraic numbers</strong>, real and complex: arithmetic, roots of any order, exact comparison and equality, modulus, real and imaginary parts, readable exact forms such as <code>(1 + √5)/2</code> and <code>−1/2 + i√3/2</code>.</li>
+  <li><strong>Exact trigonometry</strong>: cos, sin and tan at rational multiples of π, roots of unity, cyclotomic polynomials.</li>
+  <li><strong>Polynomials</strong>: factoring over the integers, resultants, discriminants, root counting, interpolation, partial fractions, Galois groups up to degree 5.</li>
+  <li><strong>Structures</strong>: continued fractions (periodic ones for quadratic irrationals), Pell's equation, number fields Q(α), finite fields GF(pᵏ), modular arithmetic.</li>
+  <li><strong>Recognition</strong>: turn a decimal like 1.6180339887 back into (1 + √5)/2 with lattice reduction.</li>
+</ul>
+
+<h2>Topics</h2>
+<p>Each topic page explains the mathematics and lets you run it. <a href="explore.html">Explore</a> is a free-form calculator for all of it; <a href="reference.html">Reference</a> lists every function.</p>
+<div class="cards" id="cards"></div>
+
+<h2>Install</h2>
+<pre><code>bun add github:ratmath/algebraic    # depends on @ratmath/core</code></pre>
+<p>The library is pure JavaScript with BigInt arithmetic and no floating point in any answer. Floats appear only to find a first guess, which is then proven or discarded. @ratmath/linalg uses it for eigenvalues and exact fields.</p>
+<template data-runbox>
+const r2 = sqrt(fromRational(2));
+const s = add(r2, sqrt(fromRational(3)));
+PRINT("√2 + √3 =", s.toString(20));
+PRINT("its minimal polynomial (constant first):", s.poly);
+PRINT("(√2 + √3)² =", format(mul(s, s)));
+PRINT("cos(π/5) =", format(cosPi("1/5")));
+PRINT("roots of x³ − 2:", roots([-2, 0, 0, 1], { complex: true }).map((r) => format(r.value)));
+galoisGroup([-2, 0, 0, 0, 1]).name
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { topicCards } from "./assets/site.js";
+topicCards(document.getElementById("cards"));
+</script>
+</body>
+</html>
