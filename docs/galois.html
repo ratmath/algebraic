@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -51,6 +51,16 @@ galoisGroup([-2, 0, 0, 0, 1]);
 galoisGroup([-1, -1, 0, 0, 0, 1]).name;   // "S5", not solvable by radicals
 galoisGroup([-1, 0, 0, 0, 0, 1]);         // reducible: { reducible: true, factors: [...] }</code></pre>
 <p class="small muted">Labels follow the transitive-group numbering nTk. Degree 6 and above are not covered yet.</p>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">for (const [name, p] of [["x⁴ − 2", [-2, 0, 0, 0, 1]], ["x⁵ − x − 1", [-1, -1, 0, 0, 0, 1]], ["x³ − 3x + 1", [1, -3, 0, 1]]]) {
+  const g = galoisGroup(p);
+  PRINT(name.padEnd(12), g.name, " order", g.order, g.solvable ? " solvable" : " not solvable by radicals");
+}
+galoisGroup([-2, 0, 0, 0, 1])</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>

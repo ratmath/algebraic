@@ -123,9 +123,16 @@ it only when the polynomial is much smaller than the digits given.
 ## Docs
 
 `docs/` is a static site: an overview, a full reference, a free-form explore
-page and ten topic pages with live demos. `bun run docs:build` bundles the
-library into `docs/assets/algebraic.js`; serve `docs/` with any static server
-or GitHub Pages.
+page and ten topic pages with live demos. Edit the pages in `docs/src/` (full
+HTML documents), not `docs/*.html`: `bun run docs:build` bundles the library
+into `docs/assets/algebraic.js` and writes each page to `docs/` with an
+editable JavaScript code box at the end of its article (seed code from the
+page's `<template data-runbox>`), math in `\( … \)` / `\[ … \]` typeset with
+KaTeX, and content-hash `?v=` stamps on asset links. The build runs every box
+and fails if one throws (`--verbose` prints what each shows).
+`docs/assets/runbox.js` and `scripts/docs-kit.js` are shared verbatim with the
+core, analytic and linalg docs; keep the copies in sync. Serve `docs/` with any
+static server or GitHub Pages.
 
 ## Limits
 

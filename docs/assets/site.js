@@ -2,8 +2,9 @@
 // theme switch, result rendering, expression demos (any element with
 // data-expr becomes one) and a small complex-plane plot.
 
-import * as A from "./algebraic.js";
-import { run } from "./lang.js";
+import * as A from "./algebraic.js?v=52d62eca40";
+import { run } from "./lang.js?v=52d62eca40";
+import { mountRunboxes } from "./runbox.js?v=52d62eca40";
 
 export { A, run };
 
@@ -242,3 +243,4 @@ for (const el of document.querySelectorAll("[data-expr]")) {
     rows: el.dataset.rows ? Number(el.dataset.rows) : 1,
   });
 }
+mountRunboxes(document, { scope: A });

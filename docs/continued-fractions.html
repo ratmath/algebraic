@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css">
-<script type="module" src="assets/site.js"></script>
+<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
+<script type="module" src="assets/site.js?v=52d62eca40"></script>
 </head>
 <body>
 <div class="shell">
@@ -54,11 +54,23 @@ periodicContinuedFraction(sqrt(fromRational(7)));    // { preperiod: [2n], perio
 fromContinuedFraction([1], [2]);                     // √2, exactly
 pell(61);              // { x: 1766319049n, y: 226153980n, negative: { x: 29718n, y: 3805n } }
 fundamentalUnit(94);   // { unit: 2143295 + 221064√94 (a NumberField element), norm: 1 }</code></pre>
+<section class="runbox" aria-label="Runnable code">
+  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">PRINT("∛2 =", continuedFraction(nthRoot(fromRational(2), 3), 8));
+PRINT("√7 =", periodicContinuedFraction(sqrt(fromRational(7))));
+PRINT("convergents of √2:", convergents([1, 2, 2, 2, 2, 2]).map(String));
+PRINT("[1; 2, 2, …] =", format(fromContinuedFraction([1], [2])));
+const p = pell(61);
+PRINT("x² − 61y² = 1:", p.x, p.y);
+fundamentalUnit(94)</textarea>
+  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
+  <div class="runbox-out" aria-live="polite"></div>
+</section>
 </article>
 </main>
 </div>
 <script type="module">
-import { A, h, later, run } from "./assets/site.js";
+import { A, h, later, run } from "./assets/site.js?v=52d62eca40";
 const input = document.getElementById("cf-in");
 const nIn = document.getElementById("cf-n");
 const out = document.getElementById("cf-out");

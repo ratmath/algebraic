@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Factoring Polynomials</title>
+<meta name="description" content="Zassenhaus factoring over the integers: square-free parts, factoring mod p, Hensel lifting, recombination.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Polynomials</div>
+<h1>Factoring</h1>
+<p class="lede">x⁶ − 1 = (x − 1)(x + 1)(x² − x + 1)(x² + x + 1). Factoring into irreducible pieces is the engine under every algebraic number here, since each arithmetic result is put on its minimal polynomial by factoring a resultant.</p>
+<div data-expr="factor(x^6 - 1)" data-examples="factor(x^4 + 4)|factor(x^8 - 40x^6 + 352x^4 - 960x^2 + 576)|factor((x - 1)^3 (x + 2))|factor(6x^3 + x^2 - 4x + 1)|irreducible(x^4 + 1)|factor(2x^2 - 1/2)"></div>
+
+<h2>The Zassenhaus method</h2>
+<p>Factoring over the integers goes through a prime p:</p>
+<ol>
+  <li><strong>Square-free part.</strong> Repeated factors are split off first with gcds of f and f′ (Yun's algorithm), so (x − 1)³ is found as x − 1 with multiplicity 3.</li>
+  <li><strong>Factor mod p.</strong> Choose a small prime that keeps f square-free mod p. Over the finite field F_p, Cantor–Zassenhaus factoring is fast: distinct-degree factoring groups irreducible factors by degree using gcd(f, x^(pᵈ) − x), and equal-degree factoring splits each group with random gcds.</li>
+  <li><strong>Hensel lifting.</strong> The factorisation mod p is lifted to one mod pᵏ, for pᵏ larger than twice a bound on the coefficients of any true factor (a Mignotte-style bound).</li>
+  <li><strong>Recombination.</strong> Each true factor over Z is, mod pᵏ, a product of some of the lifted factors. Products of 1, 2, … lifted factors are tried (with symmetric remainders) until each one either divides f exactly or is ruled out.</li>
+</ol>
+<p>The mod p picture already says a lot. x⁴ + 1 is irreducible over the integers, yet it factors modulo <em>every</em> prime; the recombination step is what proves no product of the pieces works over Z.</p>
+<div class="demo" id="modp-demo">
+  <div class="demo-title">The same polynomial modulo several primes</div>
+  <div class="demo-row"><input class="text grow" id="modp-in" value="x^4 + 1" spellcheck="false" aria-label="Polynomial"><button id="modp-go">Factor mod p</button></div>
+  <div class="demo-row" id="modp-ex"></div>
+  <div class="out" id="modp-out"></div>
+</div>
+<p>The degrees of the factors mod p are the cycle shapes of Frobenius acting on the roots; how often each shape appears as p varies is governed by the Galois group (Chebotarev's density theorem). See <a href="galois.html">Galois groups</a>.</p>
+
+<h2>In code</h2>
+<pre><code>import { factor, isIrreducible, factorModP } from "@ratmath/algebraic";
+factor([-1, 0, 0, 0, 0, 0, 1]);
+// { content: 1n, factors: [{ factor: [-1n, 1n], multiplicity: 1 }, …] }
+isIrreducible([1, 0, 0, 0, 1]);   // true
+factorModP([1n, 0n, 0n, 0n, 1n], 17n);  // four linear factors mod 17</code></pre>
+<template data-runbox>
+const f = factor([-1, 0, 0, 0, 0, 0, 1]);   // x⁶ − 1
+for (const { factor: p, multiplicity } of f.factors) PRINT(polys.format(p), multiplicity > 1 ? `^${multiplicity}` : "");
+PRINT("x⁴ + 1 irreducible over Q:", isIrreducible([1, 0, 0, 0, 1]));
+factorModP([1n, 0n, 0n, 0n, 1n], 17n)
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, later, run } from "./assets/site.js";
+const input = document.getElementById("modp-in");
+const out = document.getElementById("modp-out");
+const fmt = (p) => A.qpoly.formatP(p.map((c) => [c, 1n]));
+const go = () => later(out, () => {
+  const r = run(input.value).result;
+  if (r.type !== "poly") throw new Error("enter a polynomial in x");
+  const ints = A.polys.toInteger(r.c);
+  const tbl = h("table", { class: "data" }, h("tr", {}, h("th", {}, "p"), h("th", {}, "factor degrees"), h("th", {}, "factors mod p")));
+  for (const p of [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n]) {
+    const fp = ints.map((c) => ((c % p) + p) % p);
+    while (fp.length && fp[fp.length - 1] === 0n) fp.pop();
+    if (fp.length < 2) continue;
+    let fs;
+    try { fs = A.factorModP(fp, p); } catch (e) { fs = null; }
+    if (!fs) { tbl.append(h("tr", {}, h("td", {}, String(p)), h("td", { colspan: 2, class: "muted" }, "not square-free mod p"))); continue; }
+    const degs = fs.map((f) => f.length - 1).sort((a, b) => a - b);
+    tbl.append(h("tr", {}, h("td", {}, String(p)), h("td", {}, degs.join(" + ")), h("td", {}, fs.map((f) => "(" + fmt(f) + ")").join(" "))));
+  }
+  return h("div", {}, h("div", { class: "small muted" }, "over Z: " + run("factor(" + input.value + ")").result.text), h("div", { class: "tablewrap" }, tbl));
+});
+document.getElementById("modp-go").onclick = go;
+input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+document.getElementById("modp-ex").append(...["x^4 + 1", "x^5 - x - 1", "x^3 - 2", "x^4 - 10x^2 + 1", "x^6 + x^3 + 1"].map((x) => h("button", { class: "chipbtn", onclick: () => { input.value = x; go(); } }, x)));
+go();
+</script>
+</body>
+</html>

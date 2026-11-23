@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recognising Numbers</title>
+<meta name="description" content="Turning decimals back into algebraic numbers with LLL lattice reduction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Numbers</div>
+<h1>Recognising numbers</h1>
+<p class="lede">You have 1.6180339887 from a calculation and suspect it is (1 + √5)/2. Lattice reduction finds the small integer polynomial that a decimal nearly satisfies; the library then checks the guess exactly against the digits.</p>
+
+<h2>Small polynomials are short vectors</h2>
+<p>Suppose x is known to D digits and we look for integers a₀ … a_d, not all zero and not large, with a₀ + a₁x + … + a_d·x^d = 0. Take C ≈ 10^D and the d + 1 vectors</p>
+<div class="math">bᵢ = ( eᵢ , round(C·xⁱ) ),   i = 0 … d</div>
+<p>(eᵢ is the i-th unit vector). The combination Σ aᵢbᵢ is (a₀, …, a_d, C·Σaᵢxⁱ + rounding). When the polynomial nearly vanishes at x, the last entry is tiny, so the whole vector is short. Other combinations have a last entry around C·(something not small). Finding the shortest vector of a lattice is hard, but the <strong>LLL algorithm</strong> (Lenstra, Lenstra and Lovász, 1982) finds one within a factor 2^(d/2) of it in polynomial time, and that is plenty here.</p>
+<p>LLL repeats two moves on the basis: <em>size reduction</em> (subtract rounded multiples of earlier vectors, so each Gram–Schmidt coefficient is at most 1/2) and a <em>swap</em> of neighbours whenever the Lovász condition |b*ₖ|² ≥ (3/4 − μ²)|b*ₖ₋₁|² fails. Here it runs in exact rational arithmetic.</p>
+
+<h2>A guess, checked</h2>
+<p>The first reduced vector gives a candidate polynomial. It is factored, and the library looks for an irreducible factor with a root inside the interval the digits allow (one unit in the last digit either way). There is always some polynomial that fits a decimal, so a fit only counts as recognition when it is much smaller than the digits: a polynomial of degree d with coefficients up to H takes about (d + 1)·log₁₀H digits to pin down, and the library asks for 3 digits more than that. Without that margin, π = 3.14159265358979 would be "recognised" as a fraction with 8-digit numerator and denominator.</p>
+<div data-expr="recognize(&quot;1.6180339887&quot;)" data-examples="recognize(&quot;1.41421356237&quot;)|recognize(&quot;1.2599210498948732&quot;)|recognize(&quot;3.14626436994197234232&quot;)|recognize(&quot;0.9238795325112867&quot;)|recognize(&quot;1.324717957244746&quot;)|recognize(&quot;3.14159265358979&quot;)"></div>
+<p>A recognised number is a guess that agrees with every digit given, not a proof that the original quantity is that number; more digits could refute it. What it does give you is an exact candidate to verify by other means, for instance by substituting it back with the exact arithmetic of this library.</p>
+
+<h2>In code</h2>
+<pre><code>import { recognize, format, lll } from "@ratmath/algebraic";
+const r = recognize("0.9238795325112867");
+format(r.value);    // "√(2 + √2)/2"   (that is cos(π/8))
+r.poly;             // [1n, 0n, -8n, 0n, 8n]
+r.digitsUsed;       // 16
+r.digitsNeeded;     // 6
+recognize("3.14159265358979");   // null: nothing small enough fits
+lll([[1n, 0n, 0n, 10000n], [0n, 1n, 0n, 14142n], [0n, 0n, 1n, 20000n]]);  // reduced basis</code></pre>
+<p class="small muted">Options: <code>{ maxDegree = 4, margin = 3 }</code>. The input can be a decimal string (a trailing "…" is allowed) or an interval <code>[lo, hi]</code>.</p>
+<template data-runbox>
+const r = recognize("0.9238795325112867");
+PRINT("0.9238795325112867 looks like", format(r.value), "(cos(π/8))");
+PRINT("minimal polynomial:", r.poly, " digits used", r.digitsUsed, " needed", r.digitsNeeded);
+PRINT("π's digits:", recognize("3.14159265358979"));
+recognize("1.4142135623730951")?.poly
+</template>
+</article>
+</main>
+</div>
+</body>
+</html>

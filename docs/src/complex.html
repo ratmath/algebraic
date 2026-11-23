@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Complex Algebraic Numbers</title>
+<meta name="description" content="Certified complex roots, principal n-th roots, modulus and exact a + bi forms.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+<script type="module" src="assets/site.js"></script>
+</head>
+<body>
+<div class="shell">
+<aside></aside>
+<main>
+<article>
+<div class="eyebrow">Numbers</div>
+<h1>Complex numbers</h1>
+<p class="lede">Most polynomials have roots off the real line. x³ − 2 has one real root, ∛2, and two more at ∛2·(−1/2 ± i√3/2). These are algebraic numbers too, and the library holds them as exactly as the real ones.</p>
+
+<h2>A box that holds exactly one root</h2>
+<p>A non-real root is stored as its polynomial plus a rectangle in the complex plane. Floating point finds approximate roots first (Durand–Kerner); each is then <strong>proven</strong> with the Krawczyk test. Writing z = x + iy turns p(z) = 0 into two real equations in x and y. For a box X with midpoint m and an approximate inverse Y of the Jacobian,</p>
+<div class="math">K(X) = m − Y·f(m) + (I − Y·J(X))·(X − m)</div>
+<p>is computed in exact interval arithmetic. If K(X) lands strictly inside X, the box holds exactly one root, and K(X) ∩ X is a smaller box that still holds it. Boxes for different roots are checked to be disjoint, so every root is counted once. Repeating the step shrinks the box as far as you like.</p>
+<div class="demo" id="plane-demo">
+  <div class="demo-title">Roots in the plane</div>
+  <div class="demo-row"><input class="text grow" id="plane-in" value="x^5 - x - 1" spellcheck="false" aria-label="Polynomial"><button id="plane-go">Plot</button></div>
+  <div class="demo-row" id="plane-ex"></div>
+  <div class="split"><canvas class="plane" id="plane"></canvas><div class="out" id="plane-out"></div></div>
+</div>
+
+<h2>Arithmetic and display</h2>
+<p>Sums and products work exactly as for real numbers: a resultant, factored, then the right root picked by box arithmetic. The imaginary unit is <code>I()</code>, the root of x² + 1 with positive imaginary part, and <code>complex(x, y)</code> builds x + iy from real parts.</p>
+<p>A complex number of degree 2 is always (p + q√−m)/r, so it prints exactly: −2 + 2i, −1/2 + i√3/2. For higher degrees <code>format</code> computes the real and imaginary parts exactly and prints them in radicals when they have short forms, so ∛i comes out as √3/2 + i/2. Otherwise each part gets certified digits.</p>
+<div data-expr="(1 + i)^3" data-examples="(1 + 2i)/(3 - 4i)|abs(3 + 4i)|abs(1 + i)|re((1 + i)/(2 - i))|conj(unity(3))|norm(sqrt(2) + i)"></div>
+
+<h2>Principal roots</h2>
+<p>A non-zero number has n different n-th roots. The <em>principal</em> one is the one with the largest real part, the root whose angle is the original angle divided by n. For a negative real and even n two roots tie; the one with positive imaginary part wins, so √−4 = 2i.</p>
+<p>The library finds it without angles or logarithms. If m is the minimal polynomial of z, every n-th root of z is a root of m(xⁿ). Those candidates are factored and isolated; interval powers decide which candidates have z itself as their n-th power (the others give z's conjugates), and box comparison picks the largest real part. The answer is exact: <code>pow(nthRoot(z, 3), 3)</code> equals z.</p>
+<div data-expr="sqrt(-3 + 4i)" data-examples="sqrt(i)|i^(1/3)|root(-16, 4)|root(-1, 6)|(1 + sqrt(2) i)^(1/3)|sqrt(-3 - 4i)"></div>
+<p class="small muted">Odd roots of negative reals stay real by convention: <code>root(-8, 3)</code> is −2, not the principal complex root 1 + i√3.</p>
+
+<h2>In code</h2>
+<pre><code>import { I, complex, sqrt, nthRoot, abs, re, im, format, roots } from "@ratmath/algebraic";
+format(sqrt(complex(-3, 4)));       // "1 + 2i"
+format(nthRoot(I(), 3));            // "√3/2 + i/2"
+format(abs(complex(1, 1)));         // "√2"
+re(complex(1, 2)).toRational();     // 1
+const [, w] = roots([1, 1, 1], { complex: true }).map((r) =&gt; r.value);
+w.toString();                       // "−1/2 − i√3/2"
+w.box(64);                          // { re: [lo, hi], im: [lo, hi] } as Core Rationals</code></pre>
+<template data-runbox>
+PRINT("√(−3 + 4i) =", format(sqrt(complex(-3, 4))));
+PRINT("∛i =", format(nthRoot(I(), 3)));
+PRINT("|1 + i| =", format(abs(complex(1, 1))));
+const [, w] = roots([1, 1, 1], { complex: true }).map((r) => r.value);
+PRINT("a cube root of unity:", w.toString());
+w.box(32)
+</template>
+</article>
+</main>
+</div>
+<script type="module">
+import { A, h, plane, coords, later, run, render } from "./assets/site.js";
+const input = document.getElementById("plane-in");
+const out = document.getElementById("plane-out");
+const canvas = document.getElementById("plane");
+const go = () => later(out, () => {
+  const r = run(`croots(${input.value})`).result;
+  const pts = r.items.map((it, k) => ({ ...coords(it.value), label: String(k + 1) }));
+  plane(canvas, pts, { unit: true });
+  return render(r);
+});
+document.getElementById("plane-go").onclick = go;
+input.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
+document.getElementById("plane-ex").append(...["x^5 - x - 1", "x^3 - 2", "x^4 + 1", "x^6 + x^3 + 1", "x^8 - 3x + 1", "x^2 + x + 1"].map((x) => h("button", { class: "chipbtn", onclick: () => { input.value = x; go(); } }, x)));
+go();
+</script>
+</body>
+</html>
