@@ -10,8 +10,8 @@
 import { AlgebraicReal, isolate, primitive, degree, signAt, squareFree } from "./poly.js";
 import { ComplexAlgebraic, certifyComplexRoots } from "./complex.js";
 import { factor } from "./factor.js";
-import { reduce, addQ, subQ, mulQ, divQ, toPair, sqrtFloor, detInt } from "./q.js";
-import { quadraticParts, realSide, formatReal, fmtQ, joinParts, nestedRadical } from "./radical.js";
+import { reduce, addQ, subQ, mulQ, divQ, toPair, sqrtFloor } from "./q.js";
+import { quadraticParts, realSide, formatReal, fmtQ, joinParts, nestedRadical, pureRootParts, formatPureRoot } from "./radical.js";
 import { ivAdd, ivSub, ivMul } from "./interval.js";
 
 export const MAX_DEGREE = 64;
@@ -120,12 +120,13 @@ function box(a, bits) {
 const meets = ([a, b], [c, d]) => cmp(b, c) >= 0 && cmp(d, a) >= 0;
 const overlaps = (u, v) => meets(u.re, v.re) && meets(u.im, v.im);
 
-function pick(poly, enclose) {
+function pick(poly, enclose, realOnly = false) {
   const { factors } = factor(trimInt(poly));
   const candidates = [];
   for (const { factor: f } of factors) {
     if (degree(f) > MAX_DEGREE) throw new RangeError(`the result needs a polynomial of degree ${degree(f)}; the limit is ${MAX_DEGREE}`);
-    candidates.push(...rootsOfIrreducible(f));
+    // a real result is a real root: the complex roots need not be certified at all
+    candidates.push(...(realOnly ? isolate(f) : rootsOfIrreducible(f)));
   }
   for (let bits = 8; bits <= 8192; bits *= 2) {
     const E = enclose(bits);
@@ -137,57 +138,76 @@ function pick(poly, enclose) {
 }
 
 // ---------------------------------------------------------------------------
-// Resultants by evaluation and interpolation
+// Composed sums and products by power sums
+//
+// The polynomial whose roots are all a_i + b_j (or a_i·b_j) is the resultant
+// of p(x) and q(t − x) (or xⁿq(t/x)). Its power sums come straight from those
+// of p and q:  Σ (a_i·b_j)^k = s_k(p)·s_k(q)  and
+// Σ (a_i + b_j)^k = Σ_j C(k, j)·s_j(p)·s_(k−j)(q),  and Newton's identities
+// turn power sums back into coefficients. That is O(D²) rational operations
+// for a result of degree D, where evaluating and interpolating Sylvester
+// determinants costs D of them at O(D³) each.
 
-function resultant(p, q) {
-  const m = p.length - 1;
-  const n = q.length - 1;
-  const size = m + n;
-  const hp = [...p].reverse();
-  const hq = [...q].reverse();
-  const rows = [];
-  for (let i = 0; i < n; i += 1) rows.push(Array.from({ length: size }, (_, j) => (j - i >= 0 && j - i <= m ? hp[j - i] : 0n)));
-  for (let i = 0; i < m; i += 1) rows.push(Array.from({ length: size }, (_, j) => (j - i >= 0 && j - i <= n ? hq[j - i] : 0n)));
-  return detInt(rows);
-}
-
-const binom = (n, k) => {
-  let r = 1n;
-  for (let i = 0n; i < BigInt(k); i += 1n) r = (r * (BigInt(n) - i)) / (i + 1n);
-  return r;
-};
-/** Coefficients in y of q(t − y). */
-function shifted(q, t) {
-  const out = Array(q.length).fill(0n);
-  q.forEach((c, k) => {
-    for (let j = 0; j <= k; j += 1) out[j] += c * binom(k, j) * t ** BigInt(k - j) * (j % 2 ? -1n : 1n);
-  });
-  return out;
-}
-/** Coefficients in y of yⁿ·q(t / y). */
-function scaled(q, t) {
-  const n = q.length - 1;
-  return q.map((_, j) => q[n - j] * t ** BigInt(n - j));
-}
-
-function interpolate(D, f) {
-  const xs = Array.from({ length: D + 1 }, (_, t) => BigInt(t));
-  const coef = xs.map((t) => Q(f(t)));
-  for (let j = 1; j <= D; j += 1) for (let i = D; i >= j; i -= 1) coef[i] = divQ(subQ(coef[i], coef[i - 1]), Q(xs[i] - xs[i - j]));
-  let poly = [coef[D]];
-  for (let i = D - 1; i >= 0; i -= 1) {
-    const next = Array(poly.length + 1).fill(ZERO);
-    poly.forEach((c, k) => {
-      next[k + 1] = addQ(next[k + 1], c);
-      next[k] = subQ(next[k], mulQ(c, Q(xs[i])));
-    });
-    next[0] = addQ(next[0], coef[i]);
-    poly = next;
+/** Power sums s_0 … s_K of the roots of p (pairs). */
+function powerSums(p, K) {
+  const n = p.length - 1;
+  const lc = Q(p[n]);
+  // elementary symmetric e_i = (−1)^i a_(n−i)/a_n
+  const e = (i) => (i > n ? ZERO : divQ(Q(i % 2 ? -p[n - i] : p[n - i]), lc));
+  const s = [Q(n)];
+  for (let k = 1; k <= K; k += 1) {
+    let acc = mulQ(Q(k % 2 ? k : -k), e(k));
+    for (let i = 1; i < k && i <= n; i += 1) {
+      const term = mulQ(e(i), s[k - i]);
+      acc = i % 2 ? addQ(acc, term) : subQ(acc, term);
+    }
+    s.push(acc);
   }
-  let L = 1n;
+  return s;
+}
+
+/** The primitive integer polynomial of degree D with power sums s_1 … s_D. */
+function fromPowerSums(s, D) {
+  const e = [Q(1)];
+  for (let k = 1; k <= D; k += 1) {
+    let acc = ZERO;
+    for (let i = 1; i <= k; i += 1) {
+      const term = mulQ(e[k - i], s[i]);
+      acc = i % 2 ? addQ(acc, term) : subQ(acc, term);
+    }
+    e.push(divQ(acc, Q(k)));
+  }
   const g = (a, b) => (b ? g(b, a % b) : a);
-  for (const [, d] of poly) L = (L * d) / g(L, d);
-  return primitive(trimInt(poly.map(([n, d]) => n * (L / d))));
+  let L = 1n;
+  for (const [, d] of e) L = (L * d) / g(L, d);
+  // x^D − e₁x^(D−1) + e₂x^(D−2) − …, constant first
+  const out = [];
+  for (let k = D; k >= 0; k -= 1) out.push((k % 2 ? -e[k][0] : e[k][0]) * (L / e[k][1]));
+  return primitive(trimInt(out));
+}
+
+function composedSum(p, q) {
+  const D = (p.length - 1) * (q.length - 1);
+  const sp = powerSums(p, D);
+  const sq = powerSums(q, D);
+  const s = [Q(D)];
+  for (let k = 1; k <= D; k += 1) {
+    let acc = ZERO;
+    let c = 1n; // C(k, j)
+    for (let j = 0; j <= k; j += 1) {
+      acc = addQ(acc, mulQ(Q(c), mulQ(sp[j], sq[k - j])));
+      c = (c * BigInt(k - j)) / BigInt(j + 1);
+    }
+    s.push(acc);
+  }
+  return fromPowerSums(s, D);
+}
+
+function composedProduct(p, q) {
+  const D = (p.length - 1) * (q.length - 1);
+  const sp = powerSums(p, D);
+  const sq = powerSums(q, D);
+  return fromPowerSums(sp.map((x, k) => mulQ(x, sq[k])), D);
 }
 
 /** The polynomial to compute with: the minimal one when cheap, without a stray root at 0. */
@@ -219,12 +239,11 @@ export function add(a, b) {
   if (ra && rb) return fromRational(addQ(ra, rb));
   const p = usable(a);
   const q = usable(b);
-  const R = interpolate((p.length - 1) * (q.length - 1), (t) => resultant(p, shifted(q, t)));
-  return pick(R, (bits) => {
+  return pick(composedSum(p, q), (bits) => {
     const A = box(a, bits);
     const B = box(b, bits);
     return { re: ivAdd(A.re, B.re), im: ivAdd(A.im, B.im) };
-  });
+  }, isReal(a) && isReal(b));
 }
 
 export const sub = (a, b) => add(a, neg(b));
@@ -236,12 +255,11 @@ export function mul(a, b) {
   if ((ra && ra[0] === 0n) || (rb && rb[0] === 0n)) return fromRational([0n, 1n]);
   const p = usable(a);
   const q = usable(b);
-  const R = interpolate((p.length - 1) * (q.length - 1), (t) => resultant(p, scaled(q, t)));
-  return pick(R, (bits) => {
+  return pick(composedProduct(p, q), (bits) => {
     const A = box(a, bits);
     const B = box(b, bits);
     return { re: ivSub(ivMul(A.re, B.re), ivMul(A.im, B.im)), im: ivAdd(ivMul(A.re, B.im), ivMul(A.im, B.re)) };
-  });
+  }, isReal(a) && isReal(b));
 }
 
 /** -1, 0 or 1 for a real a, exactly. */
@@ -508,13 +526,26 @@ export function format(a, { digits = 12 } = {}) {
       const side = realSide(s.poly, () => [s.lo, s.hi], (b) => s.refine(b));
       return formatReal(quadraticParts(s.poly, side));
     }
-    if (degree(s.poly) === 4) {
+    if (degree(s.poly) === 4 && !pureRootParts(s.poly)) {
       // a nested radical ±√(A + B√d)/C when the square is quadratic, such as cos(π/8) = √(2 + √2)/2
       const sq = mul(s, s);
       if (degree(sq.poly) === 2) {
         const side = realSide(sq.poly, () => [sq.lo, sq.hi], (b) => sq.refine(b));
         return (sign(s) < 0 ? "−" : "") + nestedRadical(quadraticParts(sq.poly, side));
       }
+    }
+    // p + q·ⁿ√m when the minimal polynomial is a shifted pure power, such as ∛2 or 1 − ⁴√5/2
+    const pure = pureRootParts(s.poly);
+    if (pure) {
+      let side = 1;
+      if (pure.n % 2 === 0) {
+        for (let bits = 8; ; bits *= 2) {
+          s.refine(bits);
+          if (cmp(s.lo, pure.p) > 0) break;
+          if (cmp(s.hi, pure.p) < 0) { side = -1; break; }
+        }
+      }
+      return formatPureRoot(pure, side);
     }
     return s.toString(digits);
   }

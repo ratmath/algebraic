@@ -24,7 +24,7 @@
 <tr><th>Function</th><th>What it does</th></tr>
 <tr class="grp"><th colspan="2"><a href="numbers.html">Making numbers</a></th></tr>
 <tr><td>fromRational(x)</td><td>A rational (number, BigInt, string like &quot;3/4&quot; or &quot;0.1&quot;, Core Rational, [n, d]) as an AlgebraicReal.</td></tr>
-<tr><td>roots(p, { complex })</td><td>All roots of an integer or rational polynomial with multiplicities: real ones ascending as AlgebraicReal, then (with complex: true) the others as ComplexAlgebraic. Each on its minimal polynomial.</td></tr>
+<tr><td>roots(p, { complex })</td><td>All roots of an integer or rational polynomial as a list of { value, multiplicity }: real ones ascending as AlgebraicReal, then (with complex: true) the others as ComplexAlgebraic. Each on its minimal polynomial.</td></tr>
 <tr><td>realRoots(p)</td><td>Shorthand for roots(p).</td></tr>
 <tr><td>complex(x, y)</td><td>x + iy from real parts (rationals or AlgebraicReals).</td></tr>
 <tr><td>I()</td><td>The imaginary unit, root of x² + 1 with positive imaginary part.</td></tr>
@@ -46,7 +46,7 @@
 <tr><td>rationalOf(a)</td><td>[n, d] when a is rational, else null.</td></tr>
 <tr><td>MAX_DEGREE</td><td>64: the largest degree a result&#x27;s polynomial may have.</td></tr>
 <tr class="grp"><th colspan="2"><a href="numbers.html">Reading a number</a></th></tr>
-<tr><td>format(a, { digits })</td><td>Exact readable form when cheap: fraction, (p + q√d)/r, nested radical, a + bi; else certified digits ending in …</td></tr>
+<tr><td>format(a, { digits })</td><td>Exact readable form when cheap: fraction, (p + q√d)/r, nested radical, pure roots such as ∛2 or 1 + 2⁵√3, a + bi; else certified digits ending in …</td></tr>
 <tr><td>a.toString(digits)</td><td>AlgebraicReal: digits with the last one certain to one unit (exact for rationals). ComplexAlgebraic: exact a + bi for degree 2, else digits for each part.</td></tr>
 <tr><td>a.refine(bits)</td><td>Shrink the isolating interval or box below 2⁻ᵇⁱᵗˢ.</td></tr>
 <tr><td>a.interval(bits)</td><td>AlgebraicReal: [lo, hi] as Core Rationals.</td></tr>
@@ -97,12 +97,17 @@
 <tr><td>g.add, sub, mul, div, inv, pow, neg</td><td>Field arithmetic (polynomials mod m, inverses by extended Euclid).</td></tr>
 <tr><td>g.norm(), g.trace()</td><td>Field norm and trace as Core Rationals.</td></tr>
 <tr><td>g.equals, isZero, coefficients, toRational</td><td>Comparison and coefficient access.</td></tr>
+<tr><td>K.factor(p)</td><td>{ unit, factors: [{ factor, multiplicity }] }: a polynomial with coefficients in K factored into irreducibles over K (Trager&#x27;s method). Also factorOver(K, p).</td></tr>
+<tr><td>K.roots(p)</td><td>The roots of p that lie in K, with multiplicities.</td></tr>
+<tr><td>K.extend(g, { name })</td><td>{ field, embed, root }: K(β) for a root β of g, irreducible over K, as a new NumberField; embed carries elements of K over.</td></tr>
+<tr><td>NumberField.containing([a, b, …])</td><td>{ field, elements }: one field holding several exact numbers, each as an element. Also fieldContaining.</td></tr>
+<tr><td>NumberField.splitting(p)</td><td>{ field, roots, degree }: the splitting field of a rational polynomial with every root as an element. Also splittingField.</td></tr>
 <tr><td>g.toAlgebraic()</td><td>The exact AlgebraicReal or ComplexAlgebraic through the field&#x27;s embedding.</td></tr>
 <tr><td>K.add(a, b), K.mul, …, K.sign</td><td>Field-object interface for field-generic algorithms.</td></tr>
 <tr class="grp"><th colspan="2"><a href="finite-fields.html">Finite fields</a></th></tr>
 <tr><td>primeField(p)</td><td>F_p: { zero, one, add, sub, mul, div, neg, inv, pow, sign, equals, from, order, primitive, log, sqrt, elements, format, size }.</td></tr>
 <tr><td>galoisField(p, k, modulus)</td><td>GF(pᵏ), elements as k coefficients; also gen, modulus, order, primitive, log, elements, format.</td></tr>
-<tr><td>isProbablePrime(n)</td><td>Miller–Rabin with 12 bases (deterministic below 3·10²⁴).</td></tr>
+<tr><td>isProbablePrime(n)</td><td>Baillie–PSW: trial division, a strong test to base 2 and a strong Lucas test. Proven below 2⁶⁴; no composite that passes is known. Takes a BigInt or an integer Number.</td></tr>
 <tr class="grp"><th colspan="2"><a href="finite-fields.html">Number theory</a></th></tr>
 <tr><td>factorInteger(n)</td><td>[{ prime, exponent }] by trial division and Pollard rho.</td></tr>
 <tr><td>crt(residues, moduli)</td><td>{ x, m } solving the congruences, or null.</td></tr>

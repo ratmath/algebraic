@@ -53,40 +53,126 @@ export function primeField(p) {
   };
 }
 
-export function isProbablePrime(n) {
-  if (n < 4n) return n >= 2n;
-  if (n % 2n === 0n) return false;
-  const powmod = (b, e, m) => {
-    let r = 1n;
-    b %= m;
-    while (e) {
-      if (e & 1n) r = (r * b) % m;
-      b = (b * b) % m;
-      e >>= 1n;
+const SMALL_PRIMES = [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n, 41n, 43n, 47n, 53n, 59n, 61n, 67n, 71n, 73n, 79n, 83n, 89n, 97n];
+
+function powmod(b, e, m) {
+  let r = 1n;
+  b %= m;
+  while (e) {
+    if (e & 1n) r = (r * b) % m;
+    b = (b * b) % m;
+    e >>= 1n;
+  }
+  return r;
+}
+
+function isqrtBig(n) {
+  if (n < 2n) return n;
+  let x = 1n << BigInt((n.toString(2).length + 1) >> 1);
+  for (;;) {
+    const y = (x + n / x) >> 1n;
+    if (y >= x) return x;
+    x = y;
+  }
+}
+
+/** Jacobi symbol (a/n) for odd n > 0. */
+function jacobi(a, n) {
+  a = ((a % n) + n) % n;
+  let t = 1;
+  while (a !== 0n) {
+    while ((a & 1n) === 0n) {
+      a >>= 1n;
+      const r = n & 7n;
+      if (r === 3n || r === 5n) t = -t;
     }
-    return r;
-  };
+    [a, n] = [n, a];
+    if ((a & 3n) === 3n && (n & 3n) === 3n) t = -t;
+    a %= n;
+  }
+  return n === 1n ? t : 0;
+}
+
+/** Strong probable prime to base a (Miller–Rabin), n odd > 2. */
+function strongProbablePrime(n, a) {
   let d = n - 1n;
   let s = 0;
-  while (d % 2n === 0n) {
-    d /= 2n;
+  while ((d & 1n) === 0n) {
+    d >>= 1n;
     s += 1;
   }
-  for (const a of [2n, 3n, 5n, 7n, 11n, 13n, 17n, 19n, 23n, 29n, 31n, 37n]) {
-    if (a % n === 0n) continue;
-    let x = powmod(a, d, n);
-    if (x === 1n || x === n - 1n) continue;
-    let composite = true;
-    for (let i = 1; i < s; i += 1) {
-      x = (x * x) % n;
-      if (x === n - 1n) {
-        composite = false;
-        break;
-      }
-    }
-    if (composite) return false;
+  let x = powmod(a, d, n);
+  if (x === 1n || x === n - 1n) return true;
+  for (let i = 1; i < s; i += 1) {
+    x = (x * x) % n;
+    if (x === n - 1n) return true;
   }
-  return true;
+  return false;
+}
+
+/** Strong Lucas probable prime with Selfridge's parameters (n odd, not a square). */
+function strongLucasProbablePrime(n) {
+  let D = 5n;
+  for (;;) {
+    const j = jacobi(D, n);
+    if (j === -1) break;
+    if (j === 0 && (D < 0n ? -D : D) < n) return false; // D shares a factor with n
+    D = D > 0n ? -(D + 2n) : -(D - 2n);
+  }
+  const Q = (1n - D) / 4n; // P = 1
+  const mod = (x) => ((x % n) + n) % n;
+  const half = (x) => (x & 1n ? (x + n) >> 1n : x >> 1n);
+  let d = n + 1n;
+  let s = 0;
+  while ((d & 1n) === 0n) {
+    d >>= 1n;
+    s += 1;
+  }
+  // U_d, V_d, Q^d by binary ladder from the top bit of d
+  let U = 1n;
+  let V = 1n;
+  let Qk = mod(Q);
+  const bits = d.toString(2);
+  for (let i = 1; i < bits.length; i += 1) {
+    U = mod(U * V);
+    V = mod(V * V - 2n * Qk);
+    Qk = mod(Qk * Qk);
+    if (bits[i] === "1") {
+      const U2 = half(mod(U + V));
+      V = half(mod(D * U + V));
+      U = U2;
+      Qk = mod(Qk * Q);
+    }
+  }
+  if (U === 0n || V === 0n) return true;
+  for (let r = 1; r < s; r += 1) {
+    V = mod(V * V - 2n * Qk);
+    Qk = mod(Qk * Qk);
+    if (V === 0n) return true;
+  }
+  return false;
+}
+
+/**
+ * Primality by the Baillie–PSW test: trial division, a strong test to base 2,
+ * then a strong Lucas test. It is proven correct below 2^64 and no composite
+ * that passes is known. Accepts a BigInt or an integer Number.
+ */
+export function isProbablePrime(n) {
+  if (typeof n === "number") {
+    if (!Number.isSafeInteger(n)) throw new RangeError(`isProbablePrime needs an integer (a BigInt above 2^53), got ${n}`);
+    n = BigInt(n);
+  } else if (typeof n !== "bigint") n = BigInt(n);
+  if (n < 2n) return false;
+  for (const p of SMALL_PRIMES) {
+    if (n === p) return true;
+    if (n % p === 0n) return false;
+  }
+  if (n < 10201n) return true; // below 101², with no factor under 100
+  if (!strongProbablePrime(n, 2n)) return false;
+  const r = isqrtBig(n);
+  if (r * r === n) return false;
+  return strongLucasProbablePrime(n);
 }
 
 

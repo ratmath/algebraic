@@ -129,6 +129,12 @@ export function interpolate(points) {
   const xs = points.map(([x]) => toPair(x));
   const c = points.map(([, y]) => toPair(y));
   const n = xs.length;
+  const seen = new Set();
+  for (const [a, b] of xs) {
+    const key = `${a}/${b}`;
+    if (seen.has(key)) throw new RangeError(`interpolate needs distinct x values; ${b === 1n ? a : key} appears twice`);
+    seen.add(key);
+  }
   for (let j = 1; j < n; j += 1) for (let i = n - 1; i >= j; i -= 1) c[i] = divQ(subQ(c[i], c[i - 1]), subQ(xs[i], xs[i - j]));
   let poly = [c[n - 1]];
   for (let i = n - 2; i >= 0; i -= 1) poly = addP(mulP(poly, [subQ(Z, xs[i]), ONE]), [c[i]]);

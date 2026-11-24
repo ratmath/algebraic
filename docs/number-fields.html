@@ -8,8 +8,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
-<script type="module" src="assets/site.js?v=52d62eca40"></script>
+<link rel="stylesheet" href="assets/style.css?v=1ae5f5eda2">
+<script type="module" src="assets/site.js?v=1ae5f5eda2"></script>
 </head>
 <body>
 <div class="shell">
@@ -43,6 +43,10 @@
 <h2>A field object</h2>
 <p>Every NumberField is also a plain field object <code>{ zero, one, add, sub, mul, div, neg, sign }</code>, the interface that @ratmath/linalg's field-generic algorithms (Gaussian elimination, determinants, inverses) run on. So a matrix over Q(√2) is solved with the same code as one over Q.</p>
 
+<h2>Factoring over a field, and bigger fields</h2>
+<p>A polynomial that is irreducible over Q can split once the field grows: x⁴ + 1 has no rational factor, but over Q(√2) it is (x² + √2x + 1)(x² − √2x + 1). <code>K.factor(p)</code> finds such factors by Trager's method. Shift the polynomial by a multiple of α, multiply all its conjugates together (the norm) to get a rational polynomial, factor that over Q with the ordinary factoring code, and take a gcd with each rational factor to pull the pieces back into K.</p>
+<p>The same norm gives new fields. If g is irreducible over K, the norm is the minimal polynomial of γ = β + sα for a root β of g, and Q(γ) is all of K(β). So <code>K.extend(g)</code> returns an ordinary NumberField together with the old generator and the new root written in γ. Repeating that until a polynomial has all its roots gives its <strong>splitting field</strong> (<code>NumberField.splitting</code>), and <code>NumberField.containing([a, b])</code> builds the smallest field holding several exact numbers at once, which is the way to do fast closed arithmetic with √2 and √3 together.</p>
+
 <h2>In code</h2>
 <pre><code>import { NumberField } from "@ratmath/algebraic";
 const K = NumberField.quadratic(2);   // Q(√2)
@@ -56,7 +60,14 @@ a.toAlgebraic().toString(20);         // "2.41421356237309504880…"
 const G = NumberField.gaussian();     // Q(i)
 G.of([1, 2]).mul(G.of([1, 2])).toString();  // "−3 + 4i"
 const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
-C.gen.pow(3).toRational().toString(); // "2"</code></pre>
+C.gen.pow(3).toRational().toString(); // "2"
+
+K.factor([1, 0, 0, 0, 1]).factors.map((f) => f.factor.join(", "));  // ["1, √2, 1", "1, −√2, 1"]
+K.roots([-8, 0, 1]).map((r) => r.value.toString());                 // ["2√2", "−2√2"]
+const S = NumberField.splitting([-2, 0, 0, 1]);   // x³ − 2
+S.degree;                                         // 6
+const { field, elements: [r2, r3] } = NumberField.containing([sqrt(fromRational(2)), sqrt(fromRational(3))]);
+format(r2.mul(r3).toAlgebraic());                 // "√6"</code></pre>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
   <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const K = NumberField.quadratic(2);   // Q(√2)
@@ -66,7 +77,12 @@ PRINT("norm", a.norm().toString(), " trace", a.trace().toString());
 const G = NumberField.gaussian();
 PRINT("(1 + 2i)² =", G.of([1, 2]).mul(G.of([1, 2])).toString());
 const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
-C.gen.pow(3).toString()</textarea>
+PRINT("∛2 cubed =", C.gen.pow(3).toString());
+PRINT("x⁴ + 1 over Q(√2):", K.factor([1, 0, 0, 0, 1]).factors.map((f) =&gt; "(" + f.factor.join(", ") + ")").join(" "));
+const S = NumberField.splitting([-2, 0, 0, 1]);
+PRINT("splitting field of x³ − 2 has degree", S.degree, "roots:", S.roots.join(" ; "));
+const both = NumberField.containing([sqrt(fromRational(2)), sqrt(fromRational(3))]);
+format(both.elements[0].mul(both.elements[1]).toAlgebraic())</textarea>
   <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
   <div class="runbox-out" aria-live="polite"></div>
 </section>
@@ -74,7 +90,7 @@ C.gen.pow(3).toString()</textarea>
 </main>
 </div>
 <script type="module">
-import { A, h, later } from "./assets/site.js?v=52d62eca40";
+import { A, h, later } from "./assets/site.js?v=1ae5f5eda2";
 const fields = {
   q2: () => A.NumberField.quadratic(2),
   q5: () => A.NumberField.quadratic(5),

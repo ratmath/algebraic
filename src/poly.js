@@ -51,6 +51,20 @@ export function signAt(p, [n, d]) {
   return acc > 0n ? 1 : acc < 0n ? -1 : 0;
 }
 
+/** The numerator of p(n/d)·d^deg: p in homogeneous form. */
+function homogeneous(p, [n, d]) {
+  let acc = 0n;
+  let dp = 1n;
+  for (let i = p.length - 1; i >= 0; i -= 1) {
+    acc = acc * n + p[i] * dp;
+    dp *= d;
+  }
+  return acc;
+}
+
+/** √N for N = 2^(2^j). */
+const sqrtPow2 = (N) => 1n << BigInt((N.toString(2).length - 1) >> 1);
+
 /** p(x) as an exact pair. */
 export function evalAt(p, [n, d]) {
   let acc = 0n;
@@ -239,6 +253,7 @@ export function simplestBetween(a, b) {
 export class AlgebraicReal {
   #rational = null;
   #checked = false;
+  #N = 2n; // sub-intervals tried per refinement step
 
   constructor(poly, lo, hi) {
     this.poly = poly;
@@ -254,22 +269,67 @@ export class AlgebraicReal {
     return r;
   }
 
-  /** Shrink the interval below width 2^-bits (bisection). Returns this. */
+  /**
+   * Shrink the interval below width 2^-bits. Returns this.
+   *
+   * Quadratic interval refinement (Abbott): the secant through the ends
+   * guesses which of N equal sub-intervals holds the root, and two exact sign
+   * evaluations confirm or refute the guess. A confirmed guess squares N, so
+   * the number of correct bits doubles per step once the root is close; a
+   * refuted one falls back towards plain bisection (N = 2). Every accepted
+   * interval is certified by its signs, exactly as in bisection.
+   */
   refine(bits = 53) {
     if (this.#rational) return this;
     const target = [1n, 2n ** BigInt(bits)];
-    while (cmp(reduce(this.hi[0] * this.lo[1] - this.lo[0] * this.hi[1], this.hi[1] * this.lo[1]), target) > 0) {
-      const m = half(this.lo, this.hi);
-      const s = signAt(this.poly, m);
-      if (s === 0) {
-        this.#rational = m;
-        this.#checked = true;
-        this.lo = this.hi = m;
-        return this;
+    const wide = () => cmp(reduce(this.hi[0] * this.lo[1] - this.lo[0] * this.hi[1], this.hi[1] * this.lo[1]), target) > 0;
+    const exact = (m) => {
+      this.#rational = m;
+      this.#checked = true;
+      this.lo = this.hi = m;
+      return this;
+    };
+    let N = this.#N;
+    while (wide()) {
+      if (N > 2n) {
+        // secant position t = f(lo)/(f(lo) − f(hi)) in [0, 1], on a common scale
+        const deg = BigInt(this.poly.length - 1);
+        const fl = homogeneous(this.poly, this.lo) * this.hi[1] ** deg;
+        const fh = homogeneous(this.poly, this.hi) * this.lo[1] ** deg;
+        if (fh === 0n) return exact(this.hi);
+        if (fl !== 0n && fl !== fh) {
+          let k = (N * fl) / (fl - fh);
+          if (k < 0n) k = 0n;
+          if (k > N - 1n) k = N - 1n;
+          // grid points lo + (hi − lo)·k/N
+          const at = (j) => reduce(this.lo[0] * this.hi[1] * (N - j) + this.hi[0] * this.lo[1] * j, this.lo[1] * this.hi[1] * N);
+          const a = k === 0n ? this.lo : at(k);
+          const c = k === N - 1n ? this.hi : at(k + 1n);
+          const sa = k === 0n ? this.sLo : signAt(this.poly, a);
+          if (sa === 0) return exact(a);
+          const sc = k === N - 1n ? -this.sLo : signAt(this.poly, c);
+          if (sc === 0) return exact(c);
+          if (sa === this.sLo && sc !== this.sLo) {
+            this.lo = a;
+            this.hi = c;
+            if (N < 1n << 4096n) N *= N;
+            continue;
+          }
+          // the guess was wrong, but the two signs still tell which side the root is on
+          if (sa !== this.sLo) this.hi = a;
+          else this.lo = c;
+          N = N > 4n ? sqrtPow2(N) : 2n;
+          continue;
+        }
       }
-      if (s === this.sLo) this.lo = m;
+      const m = half(this.lo, this.hi);
+      const sgn = signAt(this.poly, m);
+      if (sgn === 0) return exact(m);
+      if (sgn === this.sLo) this.lo = m;
       else this.hi = m;
+      N = 4n;
     }
+    this.#N = N;
     return this;
   }
 
