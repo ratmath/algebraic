@@ -8,7 +8,7 @@
 
 import { isolate, primitive, degree } from "./poly.js";
 import { reduce, gcd } from "./q.js";
-import { fromRational, div as divide } from "./arith.js";
+import { fromRational, simplify as simplifyReal } from "./arith.js";
 import { certifyComplexRoots } from "./complex.js";
 import { divideExact } from "./factor.js";
 
@@ -113,9 +113,29 @@ export function sinPi(r) {
 
 /** tan(πr) for rational r, exactly (throws at the poles). */
 export function tanPi(r) {
-  const c = cosPi(r);
-  if (c.rational && c.rational[0] === 0n) throw new RangeError("tan has a pole there");
-  return divide(sinPi(r), c);
+  let [p, q] = ratio(r);
+  if (q === 2n) throw new RangeError("tan has a pole there");
+  if (q > BigInt(MAX_N / 2)) throw new RangeError(`denominators up to ${MAX_N / 2} are supported`);
+  // (1 + i·t)^q is real when t = tan(πj/q), so the q (or q − 1) values
+  // tan(πj/q), −q/2 < j < q/2, are exactly the roots of
+  //   Im (1 + i·t)^q = Σ_{k odd} (−1)^((k−1)/2) C(q, k) t^k,
+  // and they increase with j: the root is picked by counting, as for cos.
+  const n = Number(q);
+  let j = Number(((p % q) + q) % q);
+  if (2 * j > n) j -= n;
+  if (j === 0) return fromRational([0n, 1n]);
+  const P = [];
+  let c = 1n; // C(n, k)
+  for (let k = 0; k <= n; k += 1) {
+    P.push(k % 2 === 0 ? 0n : (k % 4 === 1 ? c : -c));
+    c = (c * BigInt(n - k)) / BigInt(k + 1);
+  }
+  while (P[P.length - 1] === 0n) P.pop();
+  P.shift(); // drop the root t = 0 (j = 0); the rest is a polynomial in t², handled as is
+  const all = isolate(P).sort(cmpReal);
+  const half = Math.floor((n - 1) / 2);
+  const idx = j < 0 ? j + half : j + half - 1;
+  return simplifyReal(all[idx]);
 }
 
 /**

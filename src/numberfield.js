@@ -79,6 +79,8 @@ export class NumberField {
   /** The embedding of α: an exact AlgebraicReal or ComplexAlgebraic. */
   get root() {
     if (!this._root) {
+      if (typeof this.rootChoice === "function") return (this._root = this.rootChoice());
+      if (typeof this.rootChoice === "object" && this.rootChoice !== null) return (this._root = this.rootChoice);
       const all = roots(this.m, { complex: true }).map((r) => r.value);
       const upper = (z) => z.im && z.im[0][0] > 0n;
       this._root = this.rootChoice === "positive" ? all.find((r) => r.lo && r.lo[0] > 0n) : this.n === 2 && all.every((z) => z.im) ? all.find(upper) : all[this.rootChoice];

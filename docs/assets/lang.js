@@ -7,7 +7,7 @@
 //   sqrt(2) + sqrt(3)        cospi(1/5)        roots(x^5 - x - 1)
 //   (1 + i)^(1/3)            galois(x^4 - 2)   cf(2^(1/3), 15)
 
-import * as A from "./algebraic.js?v=52d62eca40";
+import * as A from "./algebraic.js?v=9f53a80066";
 
 const { qpoly } = A;
 

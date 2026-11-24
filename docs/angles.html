@@ -4,12 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Angles and Roots of Unity</title>
+<meta property="og:title" content="Angles and Roots of Unity">
+<meta property="og:description" content="Exact algebraic numbers, factoring, number fields and finite fields in JavaScript.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ratmath.com/algebraic/angles.html">
 <meta name="description" content="Exact cos, sin and tan at rational multiples of π, roots of unity and cyclotomic polynomials.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=52d62eca40">
-<script type="module" src="assets/site.js?v=52d62eca40"></script>
+<link rel="stylesheet" href="assets/style.css?v=9f53a80066">
+<script type="module" src="assets/site.js?v=9f53a80066"></script>
 </head>
 <body>
 <div class="shell">
@@ -60,11 +64,12 @@ cyclotomic(12)</textarea>
   <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
   <div class="runbox-out" aria-live="polite"></div>
 </section>
+<footer class="sitelinks"><a href="https://github.com/ratmath/algebraic">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/algebraic">npm</a> · <a href="https://ratmath.com/">ratmath.com</a> · <a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/linalg/">linalg</a> · <a href="https://ratmath.com/graphics/">graphics</a></footer>
 </article>
 </main>
 </div>
 <script type="module">
-import { A, h, plane, coords, later, render } from "./assets/site.js?v=52d62eca40";
+import { A, h, plane, coords, later, render } from "./assets/site.js?v=9f53a80066";
 const nIn = document.getElementById("unity-n");
 const out = document.getElementById("unity-out");
 const go = () => later(out, () => {

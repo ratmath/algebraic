@@ -17,17 +17,28 @@ pow(s, 2).poly;           // [1n, -10n, 1n]            (5 + 2√6 has degree 2)
 mul(r2, r2).toRational(); // 2, exactly
 compare(r2, fromRational("7/5")); // 1
 
-roots([-2, 0, 0, 1], { complex: true }); // ∛2 and its two complex conjugates
+roots([-2, 0, 0, 1], { complex: true }); // [{ value, multiplicity }, …]: ∛2 and its two complex conjugates
 
 const K = NumberField.quadratic(2);
 K.of([1, 1]).inv().toString(); // "−1 + √2"
 ```
 
+## Install
+
+```sh
+npm install @ratmath/algebraic      # or: bun add @ratmath/algebraic
+```
+
+ES modules only (Node 22+, Bun, browsers through a bundler). TypeScript
+declarations ship with the package. The one dependency is
+[`@ratmath/core`](https://ratmath.com/core/).
+
 ## What a number is
 
 - **AlgebraicReal**: an irreducible (or at least square-free) integer
   polynomial and an interval holding exactly one of its real roots. `refine(bits)`
-  shrinks the interval, `interval(bits)` gives it as Core Rationals,
+  shrinks the interval (quadratic interval refinement: the correct digits
+  double per step once the root is close), `interval(bits)` gives it as Core Rationals,
   `toRational()` is the exact value when rational (decided exactly),
   `toString(digits)` prints certain digits.
 - **ComplexAlgebraic**: a polynomial and a rectangle in the complex plane
@@ -41,8 +52,8 @@ is i·√), `nthRoot`, `I()`, `conjugate`, `re`, `im`, `sign`, `compare`, `equal
 `isZero`, `minimalPolynomial`, `simplify`.
 
 How: a ± b and a·b are roots of a resultant, the polynomial whose roots are all
-sums (products) of conjugates of a and b; it is computed by evaluation and
-interpolation, then **factored**, so the result is put on its minimal
+sums (products) of conjugates of a and b; it is computed from the power sums
+of the two polynomials (Newton's identities), then **factored**, so the result is put on its minimal
 polynomial and degrees stay small. The right root among the candidates is
 picked by refining enclosures until exactly one fits. Inverses reverse the
 coefficients; roots substitute xⁿ. Equality and zero tests are exact: an
@@ -66,6 +77,14 @@ past a Mignotte bound, then recombination. Also `isIrreducible`,
 and `toAlgebraic()`, the exact number through the field's embedding of α.
 Arithmetic here is closed and cheap: everything stays a polynomial in α of
 degree below deg m.
+
+Polynomials over a field: `K.factor(p)` factors a polynomial with
+coefficients in K into irreducibles over K (Trager's method), `K.roots(p)`
+lists the roots that lie in K, and `K.extend(g)` adjoins a root of an
+irreducible g, returning `{ field, embed, root }` with the bigger field as a
+plain NumberField. `NumberField.containing([a, b, …])` builds one field
+holding several exact numbers, and `NumberField.splitting(p)` the splitting
+field of a rational polynomial with all its roots.
 
 ## Finite fields
 
@@ -91,7 +110,8 @@ otherwise certified digits ending in "…".
 
 ## Angles and roots of unity
 
-`cosPi(r)`, `sinPi(r)`, `tanPi(r)` for rational r (exact, no π involved),
+`cosPi(r)`, `sinPi(r)`, `tanPi(r)` for rational r (exact, no π involved;
+`tanPi` reads its value off the real roots of Im (1 + it)^q),
 `rootOfUnity(n, k)`, `rootsOfUnity(n)`, `cyclotomic(n)`, `chebyshevT(n)`,
 `cosMinimal(n)`.
 
@@ -115,7 +135,8 @@ enclosures for quintics).
 
 `factorInteger` (Pollard rho), `crt`, `modPow`, `modInverse`, `jacobi`,
 `sqrtMod`, `primitiveRoot`, `multiplicativeOrder`, `discreteLogMod`,
-`totient`, and the `nt` namespace. Finite fields gain `order`, `primitive`,
+`totient`, `isProbablePrime` (Baillie–PSW: proven below 2⁶⁴, no known
+counterexample), and the `nt` namespace. Finite fields gain `order`, `primitive`,
 `log`, `elements` (and `sqrt` for F_p). `recognize("1.6180339887")` guesses
 an algebraic number from its digits with LLL (`lll` is exported) and accepts
 it only when the polynomial is much smaller than the digits given.
@@ -137,9 +158,10 @@ static server or GitHub Pages.
 ## Limits
 
 Resultants grow as (deg a)·(deg b), so long chains of operations on
-high-degree numbers get slow; `MAX_DEGREE` (64) guards the size of any
-result's polynomial. Galois groups stop at degree 5; factoring over number
-fields is not there yet.
+high-degree numbers get slow (the factoring step dominates); `MAX_DEGREE`
+(64) guards the size of any result's polynomial. Galois groups stop at degree
+5. Field extensions stop at absolute degree 48. `format` writes square roots,
+one level of nesting and pure n-th roots; other radicals print as digits.
 
 ## Develop
 

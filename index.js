@@ -13,6 +13,7 @@ export {
 } from "./src/arith.js";
 export { factor, isIrreducible, factorModP } from "./src/factor.js";
 export { NumberField, NumberFieldElement } from "./src/numberfield.js";
+export { factorOver, rootsIn, extend, fieldContaining, splittingField } from "./src/fieldpoly.js";
 export { primeField, galoisField, isProbablePrime } from "./src/finite.js";
 
 /** Lower-level pieces: integer and rational polynomials, interval Krawczyk. */

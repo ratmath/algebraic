@@ -76,7 +76,12 @@ function roundPair(p, bits) {
  */
 export function krawczykStep(f, jacobian, X, bits = 64) {
   const n = X.length;
-  const m = X.map((x) => roundPair(ivMid(x), bits));
+  // The midpoint is rounded down to a grid; keep it inside the box, where
+  // the Jacobian enclosure holds (a box narrower than the grid would put it outside).
+  const m = X.map((x) => {
+    const r = roundPair(ivMid(x), bits);
+    return r[0] * x[0][1] < x[0][0] * r[1] ? x[0] : r;
+  });
   const J = jacobian(X.map(toCore)).map((row) => row.map(iv));
   const Jmid = new Float64Array(n * n);
   J.forEach((row, i) => row.forEach((x, j) => (Jmid[i * n + j] = pairToNumber(...ivMid(x)))));

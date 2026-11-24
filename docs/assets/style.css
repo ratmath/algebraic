@@ -138,3 +138,6 @@ details.help summary { cursor: pointer; color: var(--accent); }
 table.ref tr.grp th { padding-top: 1.4rem; font: 600 .95rem/1.3 var(--font-display); text-transform: none; letter-spacing: 0; color: var(--fg); }
 table.ref tr.grp th a { color: inherit; }
 table.data .big { font-size: .88rem; }
+.sitelinks { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
+.sitelinks a { color: var(--muted); }
+.sitelinks a:hover { color: var(--accent); }

@@ -180,3 +180,48 @@ export function nestedRadical({ p, q, d, r }) {
   const inner = formatReal({ p: A, q: B, d, r: 1n });
   return `${kk === 1n ? "" : kk}√(${inner})${CC === 1n ? "" : `/${CC}`}`;
 }
+
+const ROOT = { 3: "∛", 4: "∜" };
+const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
+const rootSign = (n) => ROOT[n] ?? `${[...String(n)].map((c) => SUP[c]).join("")}√`;
+
+/**
+ * A root of an irreducible polynomial of degree n ≥ 3 that is a shifted pure
+ * power, c·(x − p)ⁿ = e: the parts { p, k, den, m, n } of p + (k/den)·ⁿ√m with
+ * m free of n-th powers of small primes, or null when the polynomial is not
+ * of that shape. `side` is +1 when the root lies above p, −1 below.
+ */
+export function pureRootParts(poly) {
+  const n = poly.length - 1;
+  if (n < 3) return null;
+  const add = ([a, b], [c, d]) => reduce(a * d + c * b, b * d);
+  const mul = ([a, b], [c, d]) => reduce(a * c, b * d);
+  const p = reduce(-poly[n - 1], BigInt(n) * poly[n]);
+  // g(y) = f(y + p) by repeated synthetic division
+  const g = poly.map((c) => [c, 1n]);
+  for (let i = 0; i < n; i += 1) for (let j = n - 1; j >= i; j -= 1) g[j] = add(g[j], mul(g[j + 1], p));
+  for (let i = 1; i < n; i += 1) if (g[i][0] !== 0n) return null;
+  let [N, D] = reduce(-g[0][0] * g[n][1], g[0][1] * g[n][0]); // yⁿ = N/D
+  if (D < 0n) [N, D] = [-N, -D];
+  if (N === 0n || (n % 2 === 0 && N < 0n)) return null;
+  const negative = N < 0n;
+  let m = abs(N) * D ** BigInt(n - 1); // ⁿ√(N/D) = ⁿ√(N·Dⁿ⁻¹)/D
+  let k = 1n;
+  for (let q = 2n; q <= 1000n && q ** BigInt(n) <= m; q += 1n) {
+    const qn = q ** BigInt(n);
+    while (m % qn === 0n) {
+      m /= qn;
+      k *= q;
+    }
+  }
+  const [num, den] = reduce(k, D);
+  return { p, k: num, den, m, n, negative };
+}
+
+/** "∛2", "−∛4/2", "1 + 2⁵√3": the text for parts from pureRootParts; `side` picks the sign for even n. */
+export function formatPureRoot({ p, k, den, m, n, negative }, side) {
+  const minus = n % 2 ? negative : side < 0;
+  const body = `${k === 1n ? "" : k}${rootSign(n)}${m}${den === 1n ? "" : `/${den}`}`;
+  if (p[0] === 0n) return `${minus ? "−" : ""}${body}`;
+  return `${fmtQ(p)} ${minus ? "−" : "+"} ${body}`;
+}
