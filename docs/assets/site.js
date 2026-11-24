@@ -2,9 +2,9 @@
 // theme switch, result rendering, expression demos (any element with
 // data-expr becomes one) and a small complex-plane plot.
 
-import * as A from "./algebraic.js?v=1ae5f5eda2";
-import { run } from "./lang.js?v=1ae5f5eda2";
-import { mountRunboxes } from "./runbox.js?v=1ae5f5eda2";
+import * as A from "./algebraic.js?v=a09fa220fa";
+import { run } from "./lang.js?v=a09fa220fa";
+import { mountRunboxes } from "./runbox.js?v=a09fa220fa";
 
 export { A, run };
 

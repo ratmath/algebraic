@@ -20,6 +20,8 @@ if (!out.success) {
 }
 console.log("docs/assets/algebraic.js written");
 
+const SITE_LINKS = `<footer class="sitelinks"><a href="https://github.com/ratmath/algebraic">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/algebraic">npm</a> · <a href="https://ratmath.com/">ratmath.com</a> · <a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/linalg/">linalg</a> · <a href="https://ratmath.com/graphics/">graphics</a></footer>`;
+
 const v = stampAssets("docs/assets");
 const seeds = [];
 let formulas = 0;
@@ -29,7 +31,9 @@ for (const file of files) {
   seeds.push({ page: file, seed });
   const box = runboxHtml(seed, { lib: "<code>@ratmath/algebraic</code> and Core's <code>Rational</code>" });
   if (!html.includes("</article>")) throw new Error(`${file}: no </article> to put the code box in`);
-  const math = renderMath(html.replace("</article>", `${box}\n</article>`));
+  const title = /<title>([^<]*)<\/title>/.exec(html)?.[1] ?? "RatMath Algebraic";
+  const og = `<meta property="og:title" content="${title}">\n<meta property="og:description" content="Exact algebraic numbers, factoring, number fields and finite fields in JavaScript.">\n<meta property="og:type" content="website">\n<meta property="og:url" content="https://ratmath.com/algebraic/${file === "index.html" ? "" : file}">`;
+  const math = renderMath(html.replace("</title>", `</title>\n${og}`).replace("</article>", `${box}\n${SITE_LINKS}\n</article>`));
   formulas += math.count;
   const page = math.count ? math.html.replace('<link rel="stylesheet" href="assets/style.css">', `${KATEX_LINK}\n<link rel="stylesheet" href="assets/style.css">`) : math.html;
   writeFileSync(`docs/${file}`, stampLinks(page, v));
