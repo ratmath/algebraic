@@ -46,7 +46,7 @@
   },
   "homepage": "https://ratmath.com/algebraic/",
   "dependencies": {
-    "@ratmath/core": "^0.9.0"
+    "@ratmath/core": "^0.10.0"
   },
   "devDependencies": {
     "katex": "0.19.1"

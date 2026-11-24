@@ -23,7 +23,7 @@
 - `interpolate` reports duplicate x values.
 - TypeScript declarations (`index.d.ts`), a CI workflow, and docs pages that
   link to GitHub, npm and the sibling libraries.
-- Requires `@ratmath/core` ^0.9.0.
+- Requires `@ratmath/core` ^0.10.0.
 
 ## 0.1.0
 
