@@ -8,22 +8,34 @@
 <meta property="og:description" content="Exact algebraic numbers, factoring, number fields and finite fields in JavaScript.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://ratmath.com/algebraic/galois.html">
-<meta name="description" content="Galois groups of polynomials up to degree 5, with certified resolvents.">
+<meta name="description" content="Galois groups of polynomials up to degree 7: the group moving the roots, its subgroups and the fields they fix.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=9f53a80066">
-<script type="module" src="assets/site.js?v=9f53a80066"></script>
+<link rel="stylesheet" href="assets/style.css?v=0018b2bfe2">
+<script type="module" src="assets/site.js?v=0018b2bfe2"></script>
+<script type="module" src="assets/galois-explore.js?v=0018b2bfe2"></script>
 </head>
 <body>
 <div class="shell">
 <aside></aside>
 <main>
-<article>
+<article class="wide">
 <div class="eyebrow">Polynomials</div>
 <h1>Galois groups</h1>
 <p class="lede">The roots of an irreducible polynomial can be shuffled in some ways that keep every polynomial relation among them true. Those shuffles form the Galois group. It decides whether the roots can be written with radicals: x⁵ − x − 1 has group S₅ and cannot, x⁵ − 2 has group F₂₀ and its roots are ⁵√2 times fifth roots of unity.</p>
-<div data-expr="galois(x^4 - 2)" data-examples="galois(x^3 - 3x + 1)|galois(x^4 + 1)|galois(x^4 - 4x^2 + 2)|galois(x^4 + 8x + 12)|galois(x^5 - x - 1)|galois(x^5 - 2)|galois(x^5 + 20x + 16)|galois(x^5 - 5x + 12)|galois(x^5 + x^4 - 4x^3 - 3x^2 + 3x + 1)"></div>
+<h2>Explore a polynomial</h2>
+<p>Type an irreducible polynomial of degree up to 7. The page finds its group as actual permutations of the numbered roots, lists the subgroups with the field each one fixes, and compares the group with how the polynomial factors modulo primes.</p>
+<div data-galois-explorer></div>
+
+<h2>Reading the explorer</h2>
+<p><strong>The group moving the roots.</strong> A permutation of the roots belongs to the group when every polynomial equation with rational coefficients that the roots satisfy stays true after the roots are moved. For x⁴ − 2 the roots are x₁ = −⁴√2, x₂ = ⁴√2 and x₃, x₄ = ±i·⁴√2. Swapping x₁ with x₃ while leaving the other two alone is not allowed: x₁ + x₂ = 0 is true, but x₃ + x₂ = 0 is not. Complex conjugation always is allowed: it is the permutation that swaps each non-real root with its mirror image.</p>
+<p><strong>Subgroups and fields (the Galois correspondence).</strong> Adjoining all the roots to Q gives the splitting field. Each subgroup H leaves some numbers in that field unmoved, and those numbers form a field between Q and the splitting field. This is a perfect dictionary: every intermediate field arises from exactly one subgroup, a subgroup of size m gives a field of degree |G|/m, and a bigger subgroup gives a smaller field. Normal subgroups correspond to the fields that are themselves splitting fields. The explorer finds, for each subgroup, a sum of products of roots that H leaves in place and whose values under the rest of the group are all different; the minimal polynomial of that number defines the fixed field.</p>
+<p><strong>Solvable by radicals.</strong> The roots can be written with +, −, ×, ÷ and nested roots exactly when the group can be taken apart in abelian steps: replace the group by its commutator subgroup and repeat. If this reaches the trivial group, each step is a field extension made by adjoining a radical. For S₅ it stops at A₅, which is why x⁵ − x − 1 has no formula.</p>
+<p><strong>Modulo primes.</strong> Dedekind's theorem connects the group with ordinary arithmetic: if the polynomial factors modulo p into pieces of degrees 2, 2 and 1, then the group contains a permutation with cycles of lengths 2, 2 and 1. Chebotarev's theorem says each shape occurs for a share of the primes equal to its share of the group. So the factorizations alone already hint at the group.</p>
+
+<h2>Asking for one answer</h2>
+<div data-expr="galois(x^4 - 2)" data-examples="galois(x^3 - 3x + 1)|galois(x^4 + 1)|galois(x^4 - 4x^2 + 2)|galois(x^4 + 8x + 12)|galois(x^5 - x - 1)|galois(x^5 - 2)|galois(x^5 + 20x + 16)|galois(x^5 - 5x + 12)|galois(x^6 - 2)|galois(x^7 - 7x + 3)"></div>
 
 <h2>Degrees 2 and 3</h2>
 <p>A quadratic's group swaps its two roots: C₂. For a cubic the group is either all six permutations S₃ or just the three rotations A₃ = C₃. The test is the discriminant Δ = Π(αᵢ − αⱼ)²: its square root Π(αᵢ − αⱼ) changes sign under odd permutations, so it is rational exactly when the group has only even ones. x³ − 3x + 1 has Δ = 81 = 9², group C₃.</p>
@@ -47,21 +59,43 @@
 <p>There are six ways to draw the pentagon, giving six values θ₁ … θ₆ and the sextic resolvent Π(y − θₖ). The group lies in a copy of F₂₀ exactly when that sextic has a rational root (once it is square-free). Then the discriminant separates F₂₀ from D₅, and a second resolvent of degree 4, built from Σ αᵢ²αᵢ₊₁ around the oriented pentagon, separates D₅ from C₅.</p>
 <p>The resolvents have integer coefficients (they are symmetric functions of the roots of a monic integer polynomial), but no formula is needed. The library computes them from <strong>certified boxes</strong> around the five roots with exact interval arithmetic, refining until each coefficient's interval contains exactly one integer. So the result is proven, not estimated. If a resolvent comes out with a repeated root, the roots are first moved by a Tschirnhaus transformation y = x² + kx, which keeps the group.</p>
 
+<h2>Degrees 6 and 7, and the group as permutations</h2>
+<p>There are 16 transitive groups of degree 6 and 7 of degree 7. One method covers them all, and it also yields the permutations themselves:</p>
+<ol>
+<li><strong>Orbits on pairs and triples.</strong> The polynomial Π(y − (αᵢ + αⱼ)) over all pairs of roots has integer coefficients. Its irreducible factors are exactly the orbits of the group on pairs, so factoring it over the integers shows which pairs can be moved to which. The same is done for triples.</li>
+<li><strong>A group that contains the answer.</strong> The permutations that keep every one of those orbits (and are even when the discriminant is a square) form a group H₀ that contains the Galois group.</li>
+<li><strong>Candidates.</strong> The Galois group is a copy of one of the transitive groups in the table, sits inside H₀ and has exactly the observed orbits. Usually only one subgroup qualifies.</li>
+<li><strong>A deciding test.</strong> When several qualify, each candidate K is tested with F = Σ over K of α₁α₂²α₃³… with the roots permuted by K. Exactly the permutations in K leave F alone, so the group lies in K exactly when F is a rational number. That is checked exactly, as an integer root of the polynomial whose roots are the values of F on the cosets of K.</li>
+</ol>
+<p>All of it runs on certified boxes around the roots, refined until each integer coefficient is pinned down and the values that must differ sit in disjoint boxes. Repeated values are avoided by a Tschirnhaus transformation of the roots, which keeps the action.</p>
+
 <h2>In code</h2>
-<pre><code>import { galoisGroup } from "@ratmath/algebraic";
+<pre><code>import { galoisGroup, galoisAction } from "@ratmath/algebraic";
 galoisGroup([-2, 0, 0, 0, 1]);
 // { degree: 4, name: "D4", order: 8, label: "4T3", solvable: true,
 //   discriminant: Rational(-2048), discriminantIsSquare: false, resolventCubic: [...] }
 galoisGroup([-1, -1, 0, 0, 0, 1]).name;   // "S5", not solvable by radicals
-galoisGroup([-1, 0, 0, 0, 0, 1]);         // reducible: { reducible: true, factors: [...] }</code></pre>
-<p class="small muted">Labels follow the transitive-group numbering nTk. Degree 6 and above are not covered yet.</p>
+galoisGroup([3, -7, 0, 0, 0, 0, 0, 1]).name;   // "PSL(3,2)", order 168
+galoisGroup([-1, 0, 0, 0, 0, 1]);         // reducible: { reducible: true, factors: [...] }
+
+const a = galoisAction([-2, 0, 0, 0, 1]);  // x⁴ − 2
+a.roots;                // the four roots, numbered as the permutations use them
+a.permutations();       // ["()", "(3 4)", "(1 2)", "(1 2)(3 4)", ...]
+a.conjugation;          // complex conjugation as a permutation
+a.fixedField("(3 4)");  // { degree: 4, polynomial: x⁴ − 2, generator: "x₁", normal: false }
+a.correspondence();     // every subgroup class with its fixed field
+a.frobenius(200);       // factor patterns modulo 200 primes against the group's cycle types
+a.derivedSeries();      // [8, 2, 1]: solvable</code></pre>
+<p class="small muted">Labels follow the transitive-group numbering nTk. Degree 8 and above are not covered.</p>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
-  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">for (const [name, p] of [["x⁴ − 2", [-2, 0, 0, 0, 1]], ["x⁵ − x − 1", [-1, -1, 0, 0, 0, 1]], ["x³ − 3x + 1", [1, -3, 0, 1]]]) {
-  const g = galoisGroup(p);
-  PRINT(name.padEnd(12), g.name, " order", g.order, g.solvable ? " solvable" : " not solvable by radicals");
+  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const a = galoisAction([-2, 0, 0, 0, 1]);   // x⁴ − 2
+PRINT(String(a));
+PRINT("permutations:", a.permutations().join("  "));
+for (const row of a.correspondence()) {
+  PRINT(String(row.order).padStart(2), row.normal ? "normal" : "      ", row.subgroup.toString().padEnd(26), "fixes", row.index === 1 ? "Q" : "a root of " + polys.format(row.field.polynomial));
 }
-galoisGroup([-2, 0, 0, 0, 1])</textarea>
+galoisGroup([3, -7, 0, 0, 0, 0, 0, 1])</textarea>
   <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
   <div class="runbox-out" aria-live="polite"></div>
 </section>

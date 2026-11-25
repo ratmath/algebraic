@@ -139,7 +139,7 @@ export function certifiedDecimal(get, refine, digits = 12) {
 }
 
 /** √((p + q√d)/r) written as k√(A + B√d)/C with integers, as small as square-free splitting allows. */
-export function nestedRadical({ p, q, d, r }) {
+export function nestedRadical({ p, q, d, r }, negative = false) {
   // smallest C with C²·p/r and C²·q/r integers
   const rr = r / (gcd(gcd(p, q), r) || 1n);
   const [s0, t0] = squarefreeSplit(rr);
@@ -159,6 +159,7 @@ export function nestedRadical({ p, q, d, r }) {
       const [s2, t2] = squarefreeSplit(2n * (A - c));
       let terms = [[k * s1, t1], [(B < 0n ? -1n : 1n) * k * s2, t2]].filter(([a, t]) => a !== 0n && t !== 0n);
       if (terms.length === 2 && terms[0][1] === terms[1][1]) terms = [[terms[0][0] + terms[1][0], terms[0][1]]];
+      if (negative) terms = terms.map(([a, t]) => [-a, t]);
       let den = 2n * C;
       const g = terms.reduce((acc, [a]) => gcd(acc, a), den) || 1n;
       terms = terms.map(([a, t]) => [a / g, t]);
@@ -178,7 +179,7 @@ export function nestedRadical({ p, q, d, r }) {
     return [k / g, C / g];
   })();
   const inner = formatReal({ p: A, q: B, d, r: 1n });
-  return `${kk === 1n ? "" : kk}√(${inner})${CC === 1n ? "" : `/${CC}`}`;
+  return `${negative ? "−" : ""}${kk === 1n ? "" : kk}√(${inner})${CC === 1n ? "" : `/${CC}`}`;
 }
 
 const ROOT = { 3: "∛", 4: "∜" };

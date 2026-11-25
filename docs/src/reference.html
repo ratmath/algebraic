@@ -82,7 +82,15 @@
 <tr><td>isolate(p), countRealRoots(p)</td><td>Isolating intervals and the number of real roots of a square-free integer polynomial.</td></tr>
 <tr><td>simplestBetween(a, b)</td><td>The fraction with the smallest denominator in [a, b] (pairs).</td></tr>
 <tr class="grp"><th colspan="2"><a href="galois.html">Galois groups</a></th></tr>
-<tr><td>galoisGroup(p)</td><td>Degree ≤ 5: { degree, name, order, label, solvable, discriminant, discriminantIsSquare }; reducible input gives { reducible, factors }.</td></tr>
+<tr><td>galoisGroup(p)</td><td>Degree ≤ 7: { degree, name, order, label, solvable, discriminant, discriminantIsSquare }; reducible input gives { reducible, factors }.</td></tr>
+<tr><td>galoisAction(p)</td><td>Irreducible, degree ≤ 7. The group as permutations of the numbered roots: roots, group (a PermGroup), name, label, order, solvable, conjugation, orbitsOnPairs, orbitsOnTriples.</td></tr>
+<tr><td>a.permutations()</td><td>Every element in cycle notation, counted from 1.</td></tr>
+<tr><td>a.fixedField(H)</td><td>H is a PermGroup or cycle strings. { degree, polynomial, generator, substitution?, normal }: the minimal polynomial of a sum of products of roots that generates the field H fixes.</td></tr>
+<tr><td>a.correspondence({ maxDegree = 60 })</td><td>One row per subgroup class: { subgroup, order, index, conjugates, normal, field, above }.</td></tr>
+<tr><td>a.frobenius(count = 200)</td><td>{ primes, patterns: [{ type, elements, expected, primes, observed, first }] }: factor degrees modulo primes against the cycle types of the group.</td></tr>
+<tr><td>a.derivedSeries()</td><td>Orders of G ⊇ G′ ⊇ G″ ⊇ …; reaches 1 exactly when the roots are expressible by radicals.</td></tr>
+<tr><td>new PermGroup(generators, n)</td><td>Also PermGroup.symmetric(n), .alternating(n), .from(["(1 2 3)"], n). elements, order, has, contains, orbits, orbitsOnSets(k), cycleTypes, subgroup, conjugate, isNormal, cosets, derivedSubgroup, derivedSeries, isSolvable, subgroups, subgroupClasses.</td></tr>
+<tr><td>cycleString(p), fromCycles(text, n), cycleType(p)</td><td>Cycle notation for a permutation given as the array of images of 0 … n−1.</td></tr>
 <tr class="grp"><th colspan="2"><a href="continued-fractions.html">Continued fractions</a></th></tr>
 <tr><td>continuedFraction(x, terms)</td><td>Partial quotients of a rational or real algebraic number, exactly.</td></tr>
 <tr><td>convergents(terms)</td><td>The convergents as Core Rationals.</td></tr>

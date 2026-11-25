@@ -7,7 +7,7 @@
 //   sqrt(2) + sqrt(3)        cospi(1/5)        roots(x^5 - x - 1)
 //   (1 + i)^(1/3)            galois(x^4 - 2)   cf(2^(1/3), 15)
 
-import * as A from "./algebraic.js?v=9f53a80066";
+import * as A from "./algebraic.js?v=0018b2bfe2";
 
 const { qpoly } = A;
 
@@ -310,7 +310,7 @@ const F = {
     },
   },
   galois: {
-    args: 1, doc: "Galois group (degree ≤ 5)",
+    args: 1, doc: "Galois group (degree ≤ 7)",
     f: ([p]) => {
       const g = A.galoisGroup(coeffs(p));
       if (g.reducible) return list(g.factors.map((x) => record(`(${fmtInts(x.factor)})`, [["group", x.group.name], ["order", String(x.group.order)]])), "reducible: one group per factor");

@@ -4,12 +4,23 @@
 
 ### Fixed
 
+- `format` wrote the negative of a denested radical with the wrong sign on its
+  second term (`−√3 + √2` for −√3 − √2).
 - `isProbablePrime` is now Baillie–PSW (a base-2 strong test plus a strong
   Lucas test) and no longer accepts the composites that pass every one of the
   first twelve prime bases. It accepts Numbers as well as BigInts.
 
 ### Added
 
+- `galoisGroup` covers degrees 6 and 7 (all 16 and 7 transitive groups).
+- `galoisAction(p)`: the Galois group as permutations of the numbered roots,
+  with `fixedField(H)`, `correspondence()` (every subgroup class with the field
+  it fixes), `conjugation`, `frobenius(n)` (factor patterns modulo primes
+  against the group's cycle types) and `derivedSeries()`.
+- `PermGroup`, `cycleString`, `fromCycles`, `cycleType` for small permutation
+  groups.
+- The Galois docs page has an explorer: the group moving the roots, the
+  subgroup diagram with fixed fields, and the statistics modulo primes.
 - Factoring over a number field: `K.factor(poly)`, `K.roots(poly)`,
   `factorOver`, `rootsIn` (Trager's method).
 - Field extensions: `K.extend(poly)` gives K(β) as one `NumberField`,
