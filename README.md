@@ -121,9 +121,41 @@ otherwise certified digits ending in "…".
 `partialFractions(num, den)`, and the `polys` namespace (`add`, `mul`,
 `divmod`, `gcd`, `gcdExt`, `compose`, `derivative`, `evaluate`, `fromRoots`,
 `toInteger`, `format`). `galoisGroup(p)` names the Galois group of a
-polynomial of degree ≤ 5 (resolvent cubic and Kappe–Warren for quartics;
-sextic and quartic resolvents computed exactly from certified root
-enclosures for quintics).
+polynomial of degree ≤ 7 (resolvent cubic and Kappe–Warren for quartics;
+sextic and quartic resolvents for quintics; orbit resolvents on pairs and
+triples of roots for degrees 6 and 7, all computed exactly from certified
+root enclosures).
+
+## Galois groups you can look inside
+
+`galoisAction(p)` gives the group of an irreducible polynomial of degree ≤ 7
+as actual permutations of its numbered roots, with the Galois correspondence:
+
+```js
+import { galoisAction, polys } from "@ratmath/algebraic";
+
+const a = galoisAction([-2, 0, 0, 0, 1]);   // x⁴ − 2
+a.name;                  // "D4", with a.label "4T3", a.order 8, a.solvable true
+a.roots;                 // the four roots, in the order the permutations use
+a.permutations();        // ["()", "(3 4)", "(1 2)", "(1 2)(3 4)", …]
+a.conjugation;           // complex conjugation as a permutation: [0, 1, 3, 2]
+a.fixedField("(3 4)");   // { degree: 4, polynomial: x⁴ − 2, generator: "x₁", normal: false }
+for (const row of a.correspondence()) {
+  // one row per subgroup class: order, index, normal, conjugates, and the fixed field
+  console.log(row.order, row.subgroup.toString(), polys.format(row.field.polynomial));
+}
+a.frobenius(200);        // factor patterns mod 200 primes next to the group's cycle types
+a.derivedSeries();       // [8, 2, 1]: it reaches 1, so the roots are expressible by radicals
+```
+
+`fixedField(H)` returns the minimal polynomial of a number that `H` leaves in
+place and that generates the fixed field: a sum of products of roots, named in
+`generator`. `PermGroup` is the small permutation-group class behind it
+(`elements`, `subgroups()`, `subgroupClasses()`, `cosets(H)`, `isNormal(H)`,
+`derivedSeries()`, `cycleTypes()`, `orbitsOnSets(k)`), with `cycleString` and
+`fromCycles` for cycle notation. The
+[Galois page](https://ratmath.com/algebraic/galois.html) has an explorer built
+on these.
 
 ## Continued fractions, Pell, units
 
@@ -160,7 +192,7 @@ static server or GitHub Pages.
 Resultants grow as (deg a)·(deg b), so long chains of operations on
 high-degree numbers get slow (the factoring step dominates); `MAX_DEGREE`
 (64) guards the size of any result's polynomial. Galois groups stop at degree
-5. Field extensions stop at absolute degree 48. `format` writes square roots,
+7, and the list of all subgroups at groups of 400 elements. Field extensions stop at absolute degree 48. `format` writes square roots,
 one level of nesting and pure n-th roots; other radicals print as digits.
 
 ## Develop

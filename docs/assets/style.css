@@ -141,3 +141,30 @@ table.data .big { font-size: .88rem; }
 .sitelinks { margin-top: 2.5rem; padding-top: 1rem; border-top: 1px solid var(--line); font-size: .85rem; color: var(--muted); }
 .sitelinks a { color: var(--muted); }
 .sitelinks a:hover { color: var(--accent); }
+
+/* Galois explorer */
+.gal-out h3 { margin-top: 1.4rem; }
+.gal-split { display: grid; grid-template-columns: minmax(0, 22rem) minmax(0, 1fr); gap: 1rem; align-items: start; }
+@media (max-width: 720px) { .gal-split { grid-template-columns: minmax(0, 1fr); } }
+.gal-plot { width: 100%; max-width: 22rem; display: block; background: var(--surface); border: 1px solid var(--line); border-radius: 9px; }
+.gal-axis { stroke: var(--line); stroke-width: 1; }
+.gal-root { fill: var(--accent); }
+.gal-root.real { fill: var(--exact); }
+.gal-root.on { stroke: var(--mark); stroke-width: 4; }
+.gal-root-label { fill: var(--surface); font: 600 10px var(--font-mono); text-anchor: middle; pointer-events: none; }
+.gal-move { fill: none; stroke: var(--float); stroke-width: 1.8; }
+.gal-arrowhead { fill: var(--float); }
+.gal-elements { display: flex; flex-wrap: wrap; gap: .3rem; max-height: 15rem; overflow: auto; }
+.gal-elements .chipbtn.on { border-color: var(--accent); background: var(--accent-soft); }
+.gal-elements .chipbtn.conj { text-decoration: underline; text-decoration-style: dotted; }
+.gal-lattice { display: block; width: 100%; min-width: 20rem; margin: .4rem auto; }
+.gal-edge { stroke: var(--line); stroke-width: 1.4; }
+.gal-node { cursor: pointer; }
+.gal-node circle { fill: var(--surface); stroke: var(--accent); stroke-width: 1.6; }
+.gal-node.normal circle { fill: var(--accent-soft); }
+.gal-node.on circle { stroke: var(--float); stroke-width: 3; }
+.gal-node text { fill: var(--fg); font: 600 11px var(--font-mono); text-anchor: middle; pointer-events: none; }
+.gal-bars { display: flex; flex-direction: column; gap: 2px; width: 6rem; }
+.gal-bars i { display: block; height: 6px; border-radius: 3px; }
+.gal-bars .seen { background: var(--accent); }
+.gal-bars .want { background: var(--muted); opacity: .6; }

@@ -240,7 +240,102 @@ export function totient(n: bigint): bigint;
 // ---- Galois groups, lattices
 
 export interface GaloisGroup { degree: number; name: string; order: number; label: string; solvable: boolean; discriminant: Rational; discriminantIsSquare: boolean; }
+/** The Galois group of a polynomial of degree ≤ 7; a reducible one gives the group of each factor. */
 export function galoisGroup(coeffs: PolyLike): GaloisGroup;
+
+/** A permutation of 0 … n−1: p[i] is the image of i. */
+export type Permutation = number[];
+/** Cycle notation counted from 1, "(1 2 3)(4 5)"; "()" is the identity. */
+export function cycleString(p: Permutation): string;
+export function fromCycles(text: string, n: number): Permutation;
+/** The cycle lengths, longest first, fixed points included. */
+export function cycleType(p: Permutation): number[];
+export interface SubgroupClass { group: PermGroup; order: number; index: number; conjugates: number; normal: boolean; }
+/** A permutation group stored by its elements (meant for groups of at most a few thousand). */
+export class PermGroup {
+  constructor(generators: Permutation[], degree?: number, options?: { maxOrder?: number });
+  static symmetric(n: number): PermGroup;
+  static alternating(n: number): PermGroup;
+  static from(generators: Array<string | Permutation>, n: number): PermGroup;
+  degree: number;
+  generators: Permutation[];
+  /** Every element, by increasing order of the element; the identity is first. */
+  elements: Permutation[];
+  order: number;
+  readonly isTransitive: boolean;
+  readonly isAbelian: boolean;
+  readonly isCyclic: boolean;
+  readonly isEven: boolean;
+  readonly isSolvable: boolean;
+  has(p: Permutation): boolean;
+  contains(H: PermGroup): boolean;
+  equals(H: PermGroup): boolean;
+  orbits(): number[][];
+  orbitsOnSets(k: number): number[][][];
+  cycleTypes(): Array<{ type: number[]; count: number; share: number }>;
+  subgroup(generators: Array<string | Permutation>): PermGroup;
+  /** g·H·g⁻¹. */
+  conjugate(H: PermGroup, g: Permutation): PermGroup;
+  isNormal(H: PermGroup): boolean;
+  /** One element of each left coset g·H. */
+  cosets(H: PermGroup): Permutation[];
+  derivedSubgroup(): PermGroup;
+  derivedSeries(): PermGroup[];
+  withSmallGenerators(): PermGroup;
+  /** Every subgroup; a RangeError above maxOrder (default 400). */
+  subgroups(options?: { maxOrder?: number }): PermGroup[];
+  subgroupClasses(options?: { maxOrder?: number }): SubgroupClass[];
+  toString(): string;
+}
+export interface FixedField {
+  /** The index of the subgroup. */
+  degree: number;
+  /** The minimal polynomial of the generator: integers, constant first. */
+  polynomial: bigint[];
+  /** The generator as a sum of products of roots, such as "x₁x₃ + x₂x₄". */
+  generator: string;
+  /** Present when the generator is written in moved roots: "y = x + x²" or "y = 2x". */
+  substitution?: string;
+  normal: boolean;
+}
+export interface CorrespondenceRow {
+  subgroup: PermGroup;
+  order: number;
+  index: number;
+  conjugates: number;
+  normal: boolean;
+  /** null when the degree exceeds maxDegree. */
+  field: FixedField | null;
+  /** Rows whose subgroup contains a conjugate of this one. */
+  above: number[];
+}
+/** The Galois group of an irreducible polynomial of degree ≤ 7 acting on its numbered roots. */
+export class GaloisAction {
+  constructor(coeffs: PolyLike);
+  polynomial: bigint[];
+  degree: number;
+  /** The roots in the order the permutations use: real ones ascending, then the others. */
+  roots: Algebraic[];
+  group: PermGroup;
+  name: string;
+  label: string;
+  order: number;
+  solvable: boolean;
+  discriminant: Rational;
+  discriminantIsSquare: boolean;
+  orbitsOnPairs: number[][][] | null;
+  orbitsOnTriples: number[][][] | null;
+  /** Complex conjugation as an element of the group. */
+  readonly conjugation: Permutation;
+  permutations(): string[];
+  fixedField(H: PermGroup | string | Array<string | Permutation>): FixedField;
+  correspondence(options?: { maxDegree?: number; maxOrder?: number }): CorrespondenceRow[];
+  frobenius(count?: number): { primes: number; patterns: Array<{ type: number[]; elements: number; expected: number; primes: number; observed: number; first: number[] }> };
+  /** Orders of G ⊇ G′ ⊇ G″ ⊇ …; ends in 1 exactly when the group is solvable. */
+  derivedSeries(): number[];
+  toString(): string;
+}
+export function galoisAction(coeffs: PolyLike): GaloisAction;
 export function lll(rows: bigint[][], delta?: Pair): bigint[][];
 export interface Recognized { value: AlgebraicReal; poly: IntPoly; degree: number; height: bigint; digitsUsed: number; digitsNeeded: number; }
 export function recognize(x: string | number, options?: { maxDegree?: number; margin?: number }): Recognized | null;

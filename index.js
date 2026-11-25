@@ -28,5 +28,6 @@ export * as polys from "./src/polys.js";
 export { resultant, discriminant, countRoots, interpolate, partialFractions } from "./src/polys.js";
 export * as nt from "./src/nt.js";
 export { factorInteger, crt, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient } from "./src/nt.js";
-export { galoisGroup } from "./src/galois.js";
+export { galoisGroup, galoisAction, GaloisAction } from "./src/galois.js";
+export { PermGroup, cycleString, fromCycles, cycleType } from "./src/permgroup.js";
 export { lll, recognize } from "./src/lll.js";
