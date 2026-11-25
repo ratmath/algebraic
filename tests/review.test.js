@@ -1,7 +1,7 @@
 // Fixes and additions from the 2026-11 review.
 import { describe, test, expect } from "bun:test";
 import {
-  isProbablePrime, primeField, tanPi, sinPi, cosPi, div, equals, minimalPolynomial, isolate, nthRoot, sqrt,
+  roots, isProbablePrime, primeField, tanPi, sinPi, cosPi, div, equals, minimalPolynomial, isolate, nthRoot, sqrt,
   fromRational as q, add, mul, neg, format, interpolate, NumberField, splittingField, fieldContaining, factorOver,
 } from "../index.js";
 
@@ -149,3 +149,11 @@ describe("polynomials over number fields", () => {
     expect(NumberField.splitting([1, 0, -10, 0, 1]).degree).toBe(4);
   });
 });
+
+describe("format of negated denested radicals", () => {
+  test("the four roots of x⁴ − 10x² + 1", () => {
+    expect(roots([1, 0, -10, 0, 1]).map((r) => format(r.value))).toEqual(["−√3 − √2", "−√3 + √2", "√3 − √2", "√3 + √2"]);
+    expect(roots([2, 0, -4, 0, 1]).map((r) => format(r.value))).toEqual(["−√(2 + √2)", "−√(2 − √2)", "√(2 − √2)", "√(2 + √2)"]);
+  });
+});
+

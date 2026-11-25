@@ -4,6 +4,8 @@
 
 ### Fixed
 
+- `format` wrote the negative of a denested radical with the wrong sign on its
+  second term (`−√3 + √2` for −√3 − √2).
 - `isProbablePrime` is now Baillie–PSW (a base-2 strong test plus a strong
   Lucas test) and no longer accepts the composites that pass every one of the
   first twelve prime bases. It accepts Numbers as well as BigInts.

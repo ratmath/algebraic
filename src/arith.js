@@ -531,7 +531,7 @@ export function format(a, { digits = 12 } = {}) {
       const sq = mul(s, s);
       if (degree(sq.poly) === 2) {
         const side = realSide(sq.poly, () => [sq.lo, sq.hi], (b) => sq.refine(b));
-        return (sign(s) < 0 ? "−" : "") + nestedRadical(quadraticParts(sq.poly, side));
+        return nestedRadical(quadraticParts(sq.poly, side), sign(s) < 0);
       }
     }
     // p + q·ⁿ√m when the minimal polynomial is a shifted pure power, such as ∛2 or 1 − ⁴√5/2
