@@ -159,13 +159,13 @@ on these.
 
 ## Continued fractions, Pell, units
 
-`continuedFraction(x, terms)` for any real algebraic number, `convergents`,
-`periodicContinuedFraction(x)` for quadratic irrationals,
-`fromContinuedFraction(terms, period)`, `pell(D)`, `fundamentalUnit(d)`.
+These moved to [@ratmath/numtheory](https://ratmath.com/numtheory/continued-fractions.html)
+(roadmap 4.3), together with the Chinese remainder theorem; they still expand
+this library's algebraic numbers.
 
 ## Number theory and recognition
 
-`factorInteger` (Pollard rho), `crt`, `modPow`, `modInverse`, `jacobi`,
+`factorInteger` (Pollard rho), `modPow`, `modInverse`, `jacobi`,
 `sqrtMod`, `primitiveRoot`, `multiplicativeOrder`, `discreteLogMod`,
 `totient`, `isProbablePrime` (Baillie–PSW: proven below 2⁶⁴, no known
 counterexample), and the `nt` namespace. Finite fields gain `order`, `primitive`,

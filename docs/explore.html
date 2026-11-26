@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=0018b2bfe2">
-<script type="module" src="assets/site.js?v=0018b2bfe2"></script>
+<link rel="stylesheet" href="assets/style.css?v=b16f7dfc21">
+<script type="module" src="assets/site.js?v=b16f7dfc21"></script>
 </head>
 <body>
 <div class="shell">
@@ -51,7 +51,7 @@ recognize(x.toString(30).replace("…", ""))?.poly</textarea>
 </main>
 </div>
 <script type="module">
-import { A, h, run, render, later } from "./assets/site.js?v=0018b2bfe2";
+import { A, h, run, render, later } from "./assets/site.js?v=b16f7dfc21";
 const env = {};
 const input = document.getElementById("repl-in");
 const log = document.getElementById("repl-log");
@@ -61,7 +61,6 @@ const GROUPS = [
   ["Angles", ["cospi(1/5)", "sinpi(1/12)", "cospi(2/7)", "unity(8, 3)", "cyclotomic(30)", "tanpi(1/8)"]],
   ["Polynomials", ["roots(x^5 - x - 1)", "factor(x^8 - 1)", "disc(x^3 + x + 1)", "pf(1, x^4 - 1)", "gcd(x^6 - 1, x^4 - 1)", "at(x^4 - 10x^2 + 1, sqrt(2) + sqrt(3))"]],
   ["Galois", ["galois(x^3 - 2)", "galois(x^4 + 1)", "galois(x^5 - 2)", "galois(x^5 - x - 1)"]],
-  ["Continued fractions", ["cf(a, 20)", "period(sqrt(13))", "convergents(sqrt(2), 8)", "pell(61)", "unit(94)"]],
   ["Integers", ["factor(2^64 + 1)", "primroot(1009)", "sqrtmod(2, 1009)", "phi(1000)", "isprime(2^89 - 1)"]],
   ["Recognise", ["recognize(\"1.6180339887\")", "recognize(\"0.9238795325112867\")", "recognize(\"1.324717957244746\")"]],
 ];

@@ -5,9 +5,9 @@
 // page renders; nothing here touches the DOM.
 //
 //   sqrt(2) + sqrt(3)        cospi(1/5)        roots(x^5 - x - 1)
-//   (1 + i)^(1/3)            galois(x^4 - 2)   cf(2^(1/3), 15)
+//   (1 + i)^(1/3)            galois(x^4 - 2)
 
-import * as A from "./algebraic.js?v=0018b2bfe2";
+import * as A from "./algebraic.js?v=b16f7dfc21";
 
 const { qpoly } = A;
 
@@ -320,36 +320,6 @@ const F = {
         ["solvable by radicals", g.solvable ? "yes" : "no"],
         ...(g.discriminant ? [["discriminant", String(g.discriminant)], ["square?", g.discriminantIsSquare ? "yes" : "no"]] : []),
       ]);
-    },
-  },
-  // continued fractions and quadratic fields
-  cf: {
-    args: [1, 2], doc: "cf(a, n): continued fraction terms",
-    f: ([a, n]) => text(`[${A.continuedFraction(asNum(a), n ? Number(asInt(n)) : 20).map(String).join(", ").replace(", ", "; ")}${A.rationalOf(asNum(a)) ? "" : ", …"}]`),
-  },
-  period: {
-    args: 1, doc: "periodic continued fraction of a quadratic irrational",
-    f: ([a]) => {
-      const { preperiod, period } = A.periodicContinuedFraction(asNum(a));
-      return text(`[${preperiod.map(String).join(", ")}${preperiod.length ? "; " : ""}(${period.map(String).join(", ")}) repeating]`);
-    },
-  },
-  convergents: {
-    args: [1, 2], doc: "convergents(a, n)",
-    f: ([a, n]) => text(A.convergents(A.continuedFraction(asNum(a), n ? Number(asInt(n)) : 8)).map(String).join(", ")),
-  },
-  pell: {
-    args: 1, doc: "smallest solution of x² − D y² = 1",
-    f: ([d]) => {
-      const r = A.pell(asInt(d));
-      return record(`x² − ${asInt(d)}·y² = 1`, [["x", String(r.x)], ["y", String(r.y)], ["x² − Dy² = −1", r.negative ? `x = ${r.negative.x}, y = ${r.negative.y}` : "no solution"]]);
-    },
-  },
-  unit: {
-    args: 1, doc: "fundamental unit of Q(√d)",
-    f: ([d]) => {
-      const r = A.fundamentalUnit(asInt(d));
-      return record(`fundamental unit of Q(√${asInt(d)})`, [["ε", String(r.unit)], ["norm", String(r.norm)], ["≈", r.unit.toAlgebraic().toString(15)]]);
     },
   },
   // integers

@@ -207,13 +207,6 @@ export function cosMinimal(n: number): IntPoly;
 
 // ---- continued fractions
 
-export function continuedFraction(x: AlgebraicReal | RationalLike, terms?: number): bigint[];
-export function convergents(terms: bigint[]): Rational[];
-export function fromContinuedFraction(terms: bigint[], period?: bigint[] | null): AlgebraicReal;
-export function periodicContinuedFraction(x: AlgebraicReal): { preperiod: bigint[]; period: bigint[] };
-export function pell(D: bigint | number): { x: bigint; y: bigint; negative: { x: bigint; y: bigint } | null };
-export function fundamentalUnit(d: bigint | number): { unit: NumberFieldElement; norm: number };
-export function fromQuadratic(p: bigint, q: bigint, d: bigint, r: bigint): AlgebraicReal;
 
 // ---- polynomial toolkit over Q
 
@@ -227,7 +220,6 @@ export function partialFractions(num: PolyLike, den: PolyLike): PartialFractions
 // ---- number theory
 
 export function factorInteger(n: bigint | number): Array<{ prime: bigint; exponent: number }>;
-export function crt(residues: bigint[], moduli: bigint[]): { x: bigint; m: bigint } | null;
 export function modPow(a: bigint, e: bigint, m: bigint): bigint;
 export function modInverse(a: bigint, m: bigint): bigint;
 export function jacobi(a: bigint, n: bigint): -1 | 0 | 1;

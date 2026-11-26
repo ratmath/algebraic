@@ -12,8 +12,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=0018b2bfe2">
-<script type="module" src="assets/site.js?v=0018b2bfe2"></script>
+<link rel="stylesheet" href="assets/style.css?v=b16f7dfc21">
+<script type="module" src="assets/site.js?v=b16f7dfc21"></script>
 </head>
 <body>
 <div class="shell">
@@ -43,10 +43,10 @@
 </div>
 
 <h2>Uses</h2>
-<p>Finite fields are where the <a href="factoring.html">factoring</a> algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem, <code>crt(residues, moduli)</code>. The field objects plug into its field-generic algorithms directly.</p>
+<p>Finite fields are where the <a href="factoring.html">factoring</a> algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem (<code>crt</code> in <a href="https://ratmath.com/numtheory/congruences.html">@ratmath/numtheory</a>). The field objects plug into its field-generic algorithms directly.</p>
 
 <h2>In code</h2>
-<pre><code>import { primeField, galoisField, factorInteger, crt, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
+<pre><code>import { primeField, galoisField, factorInteger, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
 const F = primeField(101);
 F.inv(2n);                 // 51n
 F.order(2n);               // 100n: 2 is a primitive root mod 101
@@ -55,8 +55,7 @@ const G = galoisField(2, 8);          // GF(256), with the first irreducible mod
 const g = G.primitive();
 G.format(G.pow(g, 10));
 G.log(G.mul(g, g));        // 2n
-factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]
-crt([2, 3, 2], [3, 5, 7]);      // { x: 23n, m: 105n }</code></pre>
+factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]</code></pre>
 <section class="runbox" aria-label="Runnable code">
   <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
   <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">const F = primeField(101);
@@ -65,7 +64,7 @@ const G = galoisField(2, 8);
 const g = G.primitive();
 PRINT("in GF(256), g¹⁰ =", G.format(G.pow(g, 10)));
 PRINT("600851475143 =", factorInteger(600851475143n).map((f) =&gt; `${f.prime}${f.exponent &gt; 1 ? "^" + f.exponent : ""}`).join(" · "));
-crt([2, 3, 2], [3, 5, 7])</textarea>
+discreteLogMod(3, 13, 17)</textarea>
   <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
   <div class="runbox-out" aria-live="polite"></div>
 </section>
@@ -74,7 +73,7 @@ crt([2, 3, 2], [3, 5, 7])</textarea>
 </main>
 </div>
 <script type="module">
-import { A, h, later } from "./assets/site.js?v=0018b2bfe2";
+import { A, h, later } from "./assets/site.js?v=b16f7dfc21";
 const out = document.getElementById("gf-out");
 const go = () => later(out, () => {
   const p = BigInt(document.getElementById("gf-p").value || 2);

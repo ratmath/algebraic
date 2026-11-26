@@ -21,13 +21,13 @@ export * as poly from "./src/poly.js";
 export * as qpoly from "./src/qpoly.js";
 export * as interval from "./src/interval.js";
 export { cosPi, sinPi, tanPi, rootOfUnity, rootsOfUnity, cyclotomic, chebyshevT, cosMinimal } from "./src/trig.js";
-export { continuedFraction, convergents, fromContinuedFraction, periodicContinuedFraction, pell, fundamentalUnit, fromQuadratic } from "./src/cf.js";
+// continued fractions, Pell and the Chinese remainder theorem moved to @ratmath/numtheory
 
 /** Polynomial toolkit over Q (friendly inputs, Core Rational outputs). */
 export * as polys from "./src/polys.js";
 export { resultant, discriminant, countRoots, interpolate, partialFractions } from "./src/polys.js";
 export * as nt from "./src/nt.js";
-export { factorInteger, crt, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient } from "./src/nt.js";
+export { factorInteger, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient } from "./src/nt.js";
 export { galoisGroup, galoisAction, GaloisAction } from "./src/galois.js";
 export { PermGroup, cycleString, fromCycles, cycleType } from "./src/permgroup.js";
 export { lll, recognize } from "./src/lll.js";

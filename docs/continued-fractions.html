@@ -2,105 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Continued Fractions</title>
-<meta property="og:title" content="Continued Fractions">
-<meta property="og:description" content="Exact algebraic numbers, factoring, number fields and finite fields in JavaScript.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://ratmath.com/algebraic/continued-fractions.html">
-<meta name="description" content="Continued fractions of algebraic numbers, periodic expansions of quadratic irrationals, Pell's equation and fundamental units.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap">
-<link rel="stylesheet" href="assets/style.css?v=0018b2bfe2">
-<script type="module" src="assets/site.js?v=0018b2bfe2"></script>
+<title>Continued fractions moved · RatMath Algebraic</title>
+<meta http-equiv="refresh" content="0; url=https://ratmath.com/numtheory/continued-fractions.html">
+<link rel="canonical" href="https://ratmath.com/numtheory/continued-fractions.html">
 </head>
 <body>
-<div class="shell">
-<aside></aside>
-<main>
-<article>
-<div class="eyebrow">Structures</div>
-<h1>Continued fractions, Pell and units</h1>
-<p class="lede">Every real number x is a₀ + 1/(a₁ + 1/(a₂ + …)) with whole numbers aₖ, written [a₀; a₁, a₂, …]. Rationals stop, quadratic irrationals repeat forever, and the cut-off fractions are the best rational approximations there are. This is the Stern–Brocot tree read as a path.</p>
-
-<h2>Exact terms for any algebraic number</h2>
-<p>For an algebraic x, the root of p in an interval, the next term is t = ⌊x⌋: shrink the interval until it lies between two integers. Then x = t + 1/y, and y is a root of</p>
-<div class="math">q(y) = yᵈ · p(t + 1/y)</div>
-<p>(shift p by t, reverse its coefficients) in the interval mapped by y = 1/(x − t). No digit of x is ever approximated, so every term is right. ∛2 = [1; 3, 1, 5, 1, 1, 4, 1, 1, 8, 1, 14, 1, 10, 2, 1, 4, 12, …] shows no pattern; nobody knows whether its terms are bounded.</p>
-<div class="demo" id="cf-demo">
-  <div class="demo-title">Terms and convergents</div>
-  <div class="demo-row"><input class="text grow" id="cf-in" value="2^(1/3)" spellcheck="false" aria-label="Number"><label>terms <input class="text" id="cf-n" type="number" min="1" max="60" value="12" style="width:5rem"></label><button id="cf-go">Expand</button></div>
-  <div class="demo-row" id="cf-ex"></div>
-  <div class="out" id="cf-out"></div>
-</div>
-<p>Each convergent p/q is closer to x than any fraction with a smaller denominator, and |x − p/q| &lt; 1/q². A large next term means an unusually good convergent: π's 355/113 comes right before the term 292.</p>
-
-<h2>Quadratic irrationals repeat</h2>
-<p>Lagrange's theorem: the expansion of x is eventually periodic exactly when x is a quadratic irrational. Written as x = (P + √D)/Q with Q dividing D − P², each step is</p>
-<div class="math">a = ⌊(P + √D)/Q⌋,   P′ = aQ − P,   Q′ = (D − P′²)/Q</div>
-<p>all in integers. Only finitely many pairs (P, Q) can occur, so one repeats, and the period is read off exactly.</p>
-<div data-expr="period(sqrt(7))" data-examples="period(sqrt(94))|period((1 + sqrt(5))/2)|period((3 + sqrt(5))/7)|period(sqrt(2) + 1)"></div>
-
-<h2>Pell's equation</h2>
-<p>x² − D·y² = 1 (D not a square) always has solutions, and the smallest comes from the period of √D: if the period has length L, the convergent p/q just before the end of the first period gives p² − Dq² = (−1)^L. For odd L that solves x² − Dy² = −1, and going around a second period solves the +1 equation. D = 61 is Fermat's famous challenge: the smallest x is 1 766 319 049.</p>
-<div data-expr="pell(61)" data-examples="pell(2)|pell(13)|pell(94)|pell(109)|pell(991)"></div>
-
-<h2>Fundamental units</h2>
-<p>In the ring of integers of Q(√d) (d > 1 square-free) the units, the elements with norm ±1, are ±εⁿ for a single <strong>fundamental unit</strong> ε > 1 (Dirichlet). With ω = √d, or (1 + √d)/2 when d ≡ 1 mod 4, shift ω by an integer so that it is <em>reduced</em> (θ > 1 and −1 &lt; θ̄ &lt; 0). Its expansion is then purely periodic, and the product of the complete quotients over one period is ε. That is how 2143295 + 221064√94 appears in a few steps.</p>
-<div data-expr="unit(94)" data-examples="unit(2)|unit(5)|unit(13)|unit(46)|unit(61)|unit(21)"></div>
-
-<h2>In code</h2>
-<pre><code>import { continuedFraction, convergents, periodicContinuedFraction, fromContinuedFraction, pell, fundamentalUnit, nthRoot, sqrt, fromRational } from "@ratmath/algebraic";
-continuedFraction(nthRoot(fromRational(2), 3), 8);   // [1n, 3n, 1n, 5n, 1n, 1n, 4n, 1n]
-convergents([1, 2, 2, 2]).map(String);               // ["1", "3/2", "7/5", "17/12"]
-periodicContinuedFraction(sqrt(fromRational(7)));    // { preperiod: [2n], period: [1n, 1n, 1n, 4n] }
-fromContinuedFraction([1], [2]);                     // √2, exactly
-pell(61);              // { x: 1766319049n, y: 226153980n, negative: { x: 29718n, y: 3805n } }
-fundamentalUnit(94);   // { unit: 2143295 + 221064√94 (a NumberField element), norm: 1 }</code></pre>
-<section class="runbox" aria-label="Runnable code">
-  <div class="runbox-head"><strong>Try it</strong><span>Edit the code and run it with <code>@ratmath/algebraic</code> and Core's <code>Rational</code> in scope. The last line's value is shown; <code>PRINT(…)</code> adds lines, <code>TEX(…)</code> typesets math.</span></div>
-  <textarea spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="Code">PRINT("∛2 =", continuedFraction(nthRoot(fromRational(2), 3), 8));
-PRINT("√7 =", periodicContinuedFraction(sqrt(fromRational(7))));
-PRINT("convergents of √2:", convergents([1, 2, 2, 2, 2, 2]).map(String));
-PRINT("[1; 2, 2, …] =", format(fromContinuedFraction([1], [2])));
-const p = pell(61);
-PRINT("x² − 61y² = 1:", p.x, p.y);
-fundamentalUnit(94)</textarea>
-  <div class="runbox-bar"><button type="button" data-run>Run</button><button type="button" class="ghost" data-reset>Reset</button><span class="runbox-meta">Ctrl/⌘ + Enter runs</span></div>
-  <div class="runbox-out" aria-live="polite"></div>
-</section>
-<footer class="sitelinks"><a href="https://github.com/ratmath/algebraic">GitHub</a> · <a href="https://www.npmjs.com/package/@ratmath/algebraic">npm</a> · <a href="https://ratmath.com/">ratmath.com</a> · <a href="https://ratmath.com/core/">core</a> · <a href="https://ratmath.com/analytic/">analytic</a> · <a href="https://ratmath.com/linalg/">linalg</a> · <a href="https://ratmath.com/graphics/">graphics</a></footer>
-</article>
-</main>
-</div>
-<script type="module">
-import { A, h, later, run } from "./assets/site.js?v=0018b2bfe2";
-const input = document.getElementById("cf-in");
-const nIn = document.getElementById("cf-n");
-const out = document.getElementById("cf-out");
-const go = () => later(out, () => {
-  const r = run(input.value).result;
-  if (r.type !== "number" || !A.isReal(r.value)) throw new Error("enter a real number");
-  const terms = A.continuedFraction(r.value, Math.max(1, Math.min(60, Number(nIn.value) || 12)));
-  const conv = A.convergents(terms);
-  const x = r.value;
-  const tbl = h("table", { class: "data" }, h("tr", {}, h("th", {}, "k"), h("th", {}, "aₖ"), h("th", {}, "convergent"), h("th", {}, "error ≈")));
-  terms.forEach((t, k) => {
-    const c = conv[k];
-    let err = "";
-    if (!A.rationalOf(x)) {
-      const d = A.sub(x, A.fromRational(c));
-      err = Math.abs(d.toNumber()).toExponential(2);
-    }
-    tbl.append(h("tr", {}, h("td", {}, String(k)), h("td", { class: t > 9n ? "hl" : "" }, String(t)), h("td", {}, String(c)), h("td", {}, err)));
-  });
-  return h("div", {}, h("div", { class: "big" }, "[" + terms.map(String).join(", ").replace(", ", "; ") + (A.rationalOf(x) ? "]" : ", …]")), h("div", { class: "tablewrap" }, tbl));
-});
-document.getElementById("cf-go").onclick = go;
-for (const el of [input, nIn]) el.addEventListener("keydown", (e) => { if (e.key === "Enter") go(); });
-document.getElementById("cf-ex").append(...["2^(1/3)", "sqrt(2)", "(1 + sqrt(5))/2", "355/113", "cospi(2/7)", "sqrt(2) + sqrt(3)", "3.14159265358979"].map((x) => h("button", { class: "chipbtn", onclick: () => { input.value = x; go(); } }, x)));
-go();
-</script>
+<p>Continued fractions, Pell's equation and fundamental units moved to <a href="https://ratmath.com/numtheory/continued-fractions.html">@ratmath/numtheory</a>.</p>
 </body>
 </html>
