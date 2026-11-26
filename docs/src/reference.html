@@ -91,13 +91,8 @@
 <tr><td>a.derivedSeries()</td><td>Orders of G ⊇ G′ ⊇ G″ ⊇ …; reaches 1 exactly when the roots are expressible by radicals.</td></tr>
 <tr><td>new PermGroup(generators, n)</td><td>Also PermGroup.symmetric(n), .alternating(n), .from(["(1 2 3)"], n). elements, order, has, contains, orbits, orbitsOnSets(k), cycleTypes, subgroup, conjugate, isNormal, cosets, derivedSubgroup, derivedSeries, isSolvable, subgroups, subgroupClasses.</td></tr>
 <tr><td>cycleString(p), fromCycles(text, n), cycleType(p)</td><td>Cycle notation for a permutation given as the array of images of 0 … n−1.</td></tr>
-<tr class="grp"><th colspan="2"><a href="continued-fractions.html">Continued fractions</a></th></tr>
-<tr><td>continuedFraction(x, terms)</td><td>Partial quotients of a rational or real algebraic number, exactly.</td></tr>
-<tr><td>convergents(terms)</td><td>The convergents as Core Rationals.</td></tr>
-<tr><td>periodicContinuedFraction(x)</td><td>{ preperiod, period } for a quadratic irrational.</td></tr>
-<tr><td>fromContinuedFraction(terms, period)</td><td>The number back: rational for finite terms, quadratic for a repeating period.</td></tr>
-<tr><td>pell(D)</td><td>Smallest x² − Dy² = 1 solution { x, y, negative } (negative solves = −1 when possible).</td></tr>
-<tr><td>fundamentalUnit(d)</td><td>{ unit, norm }: the fundamental unit of Q(√d) as a NumberField element.</td></tr>
+<tr class="grp"><th colspan="2">Continued fractions</th></tr>
+<tr><td colspan="2">Moved to <a href="https://ratmath.com/numtheory/continued-fractions.html">@ratmath/numtheory</a>, with Pell equations and fundamental units.</td></tr>
 <tr class="grp"><th colspan="2"><a href="number-fields.html">Number fields</a></th></tr>
 <tr><td>new NumberField(minpoly, { name, root })</td><td>Q(α) for an irreducible polynomial; root picks the embedding (index, or &quot;positive&quot;).</td></tr>
 <tr><td>NumberField.quadratic(d), NumberField.gaussian()</td><td>Q(√d) and Q(i).</td></tr>
@@ -118,7 +113,6 @@
 <tr><td>isProbablePrime(n)</td><td>Baillie–PSW: trial division, a strong test to base 2 and a strong Lucas test. Proven below 2⁶⁴; no composite that passes is known. Takes a BigInt or an integer Number.</td></tr>
 <tr class="grp"><th colspan="2"><a href="finite-fields.html">Number theory</a></th></tr>
 <tr><td>factorInteger(n)</td><td>[{ prime, exponent }] by trial division and Pollard rho.</td></tr>
-<tr><td>crt(residues, moduli)</td><td>{ x, m } solving the congruences, or null.</td></tr>
 <tr><td>modPow(a, e, m), modInverse(a, m)</td><td>Powers and inverses mod m.</td></tr>
 <tr><td>jacobi(a, n)</td><td>Jacobi (Legendre) symbol.</td></tr>
 <tr><td>sqrtMod(a, p)</td><td>Square root mod an odd prime (Tonelli–Shanks), or null.</td></tr>

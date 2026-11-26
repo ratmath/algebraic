@@ -20,7 +20,7 @@
 <h1>Square roots, cube roots and every other root, held exactly</h1>
 <p class="lede">A JavaScript library for algebraic numbers: the roots of polynomials with whole-number coefficients. √2 + √3, the cube roots of 2, cos(π/7) and i are values you can add, multiply, compare and test for equality with no rounding, and print to as many digits as you like.</p>
 
-<div data-expr="sqrt(2) + sqrt(3)" data-title="Try it" data-examples="(sqrt(2) + sqrt(3))^2|cospi(1/5)|(1 + i)^(1/3)|roots(x^5 - x - 1)|factor(x^6 - 1)|galois(x^4 - 2)|period(sqrt(7))|recognize(&quot;1.6180339887&quot;)"></div>
+<div data-expr="sqrt(2) + sqrt(3)" data-title="Try it" data-examples="(sqrt(2) + sqrt(3))^2|cospi(1/5)|(1 + i)^(1/3)|roots(x^5 - x - 1)|factor(x^6 - 1)|galois(x^4 - 2)|recognize(&quot;1.6180339887&quot;)"></div>
 
 <h2>How a number is held</h2>
 <p>An algebraic number is stored as a polynomial with integer coefficients plus a small region that contains exactly one of its roots: an interval for a real root, a box in the complex plane for the others. The polynomial is the exact part; the region only says which root is meant, and it can be shrunk whenever more digits are wanted.</p>
@@ -46,7 +46,7 @@ galoisGroup([-2, 0, 0, 0, 1]).name;  // "D4"</code></pre>
   <li><strong>Algebraic numbers</strong>, real and complex: arithmetic, roots of any order, exact comparison and equality, modulus, real and imaginary parts, readable exact forms such as <code>(1 + √5)/2</code> and <code>−1/2 + i√3/2</code>.</li>
   <li><strong>Exact trigonometry</strong>: cos, sin and tan at rational multiples of π, roots of unity, cyclotomic polynomials.</li>
   <li><strong>Polynomials</strong>: factoring over the integers, resultants, discriminants, root counting, interpolation, partial fractions, Galois groups up to degree 7, with their subgroups and fixed fields.</li>
-  <li><strong>Structures</strong>: continued fractions (periodic ones for quadratic irrationals), Pell's equation, number fields Q(α), finite fields GF(pᵏ), modular arithmetic.</li>
+  <li><strong>Structures</strong>: number fields Q(α), finite fields GF(pᵏ), modular arithmetic. Continued fractions and Pell's equation are in <a href="https://ratmath.com/numtheory/continued-fractions.html">@ratmath/numtheory</a>.</li>
   <li><strong>Recognition</strong>: turn a decimal like 1.6180339887 back into (1 + √5)/2 with lattice reduction.</li>
 </ul>
 

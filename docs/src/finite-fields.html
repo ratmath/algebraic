@@ -39,10 +39,10 @@
 </div>
 
 <h2>Uses</h2>
-<p>Finite fields are where the <a href="factoring.html">factoring</a> algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem, <code>crt(residues, moduli)</code>. The field objects plug into its field-generic algorithms directly.</p>
+<p>Finite fields are where the <a href="factoring.html">factoring</a> algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem (<code>crt</code> in <a href="https://ratmath.com/numtheory/congruences.html">@ratmath/numtheory</a>). The field objects plug into its field-generic algorithms directly.</p>
 
 <h2>In code</h2>
-<pre><code>import { primeField, galoisField, factorInteger, crt, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
+<pre><code>import { primeField, galoisField, factorInteger, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
 const F = primeField(101);
 F.inv(2n);                 // 51n
 F.order(2n);               // 100n: 2 is a primitive root mod 101
@@ -51,8 +51,7 @@ const G = galoisField(2, 8);          // GF(256), with the first irreducible mod
 const g = G.primitive();
 G.format(G.pow(g, 10));
 G.log(G.mul(g, g));        // 2n
-factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]
-crt([2, 3, 2], [3, 5, 7]);      // { x: 23n, m: 105n }</code></pre>
+factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]</code></pre>
 <template data-runbox>
 const F = primeField(101);
 PRINT("1/2 mod 101 =", F.inv(2n), "  order of 2:", F.order(2n));
@@ -60,7 +59,7 @@ const G = galoisField(2, 8);
 const g = G.primitive();
 PRINT("in GF(256), g¹⁰ =", G.format(G.pow(g, 10)));
 PRINT("600851475143 =", factorInteger(600851475143n).map((f) => `${f.prime}${f.exponent > 1 ? "^" + f.exponent : ""}`).join(" · "));
-crt([2, 3, 2], [3, 5, 7])
+discreteLogMod(3, 13, 17)
 </template>
 </article>
 </main>

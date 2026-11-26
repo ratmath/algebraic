@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { factorInteger, crt, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient, primeField, galoisField } from "../index.js";
+import { factorInteger, modPow, modInverse, jacobi, sqrtMod, primitiveRoot, multiplicativeOrder, discreteLogMod, totient, primeField, galoisField } from "../index.js";
 
 describe("number theory", () => {
   test("factoring and φ", () => {
@@ -8,8 +8,6 @@ describe("number theory", () => {
     expect(totient(36)).toBe(12n);
   });
   test("modular arithmetic", () => {
-    expect(crt([2, 3, 2], [3, 5, 7])).toEqual({ x: 23n, m: 105n });
-    expect(crt([1, 2], [4, 6])).toBe(null);
     expect(modPow(3, 200, 1000)).toBe(1n);
     expect(modInverse(3, 7)).toBe(5n);
     expect(jacobi(2, 7)).toBe(1);

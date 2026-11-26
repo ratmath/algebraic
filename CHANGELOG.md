@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Moved
+
+- `continuedFraction`, `convergents`, `fromContinuedFraction`,
+  `periodicContinuedFraction`, `pell`, `fundamentalUnit`, `fromQuadratic` and
+  `crt` moved to `@ratmath/numtheory` (roadmap 4.3), where `crt` handles any
+  moduli and returns `{ x, modulus }`. The explorer's `cf`, `period`,
+  `convergents`, `pell` and `unit` commands go with them. The modular kernel
+  (`modPow`, `modInverse`, `jacobi`, `sqrtMod`, `primitiveRoot`,
+  `multiplicativeOrder`, `discreteLogMod`, `totient`, `factorInteger`) stays
+  here for finite fields.
+
 ### Fixed
 
 - `format` wrote the negative of a denested radical with the wrong sign on its

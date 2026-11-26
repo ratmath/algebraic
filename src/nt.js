@@ -42,22 +42,6 @@ export function modPow(a, e, m) {
   return r;
 }
 
-/** x with x ≡ rᵢ (mod mᵢ) for all i, as { x, m } (m the lcm), or null when inconsistent. */
-export function crt(residues, moduli) {
-  let x = 0n;
-  let m = 1n;
-  for (let i = 0; i < residues.length; i += 1) {
-    const r = B(residues[i]);
-    const n = B(moduli[i]);
-    const { g, x: u } = egcd(m, n);
-    if ((r - x) % g !== 0n) return null;
-    const l = (m / g) * n;
-    x = mod(x + m * mod(((r - x) / g) * u, n / g), l);
-    m = l;
-  }
-  return { x, m };
-}
-
 /** The Jacobi symbol (a/n) for odd n > 0; the Legendre symbol when n is prime. */
 export function jacobi(a, n) {
   a = B(a); n = B(n);

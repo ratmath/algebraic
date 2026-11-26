@@ -2,9 +2,9 @@
 // theme switch, result rendering, expression demos (any element with
 // data-expr becomes one) and a small complex-plane plot.
 
-import * as A from "./algebraic.js?v=0018b2bfe2";
-import { run } from "./lang.js?v=0018b2bfe2";
-import { mountRunboxes } from "./runbox.js?v=0018b2bfe2";
+import * as A from "./algebraic.js?v=b16f7dfc21";
+import { run } from "./lang.js?v=b16f7dfc21";
+import { mountRunboxes } from "./runbox.js?v=b16f7dfc21";
 
 export { A, run };
 
@@ -22,7 +22,6 @@ export const PAGES = [
   { href: "polynomials.html", title: "Polynomial toolkit", blurb: "Resultants, Sturm, partial fractions" },
   { href: "galois.html", title: "Galois groups", blurb: "The group moving the roots, its subgroups and their fields" },
   { group: "Structures" },
-  { href: "continued-fractions.html", title: "Continued fractions", blurb: "Periods, Pell equations, units" },
   { href: "number-fields.html", title: "Number fields", blurb: "Q(√2), Q(i), Q(∛2): norms and traces" },
   { href: "finite-fields.html", title: "Finite fields", blurb: "GF(pᵏ), generators, logs, mod p" },
 ];
