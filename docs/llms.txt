@@ -1,0 +1,125 @@
+# @ratmath/algebraic
+
+> Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath. Part of the RatMath Shelf; numbers come from @ratmath/core (a peer dependency). ESM: `import * as algebraic from "@ratmath/algebraic"`.
+
+Built from 0.1.0, commit 92bae17. `file:line` is relative to the package root (also node_modules/@ratmath/algebraic/); on GitHub: https://github.com/ratmath/algebraic/blob/92bae17/<file>#L<line>. Docs pages are under https://ratmath.com/algebraic/. Full types: index.d.ts.
+
+Types: `type Pair = [bigint, bigint]`; `type RationalLike = Pair | Rational | bigint | number | string`; `type IntPoly = bigint[]`; `type PolyLike = RationalLike[]`; `type PairInterval = [Pair, Pair]`; `type Algebraic = AlgebraicReal | ComplexAlgebraic`; `type FieldArg = NumberFieldElement | RationalLike`; `type Permutation = number[]`
+
+## Docs
+
+- https://ratmath.com/algebraic/llms-full.txt: every page below as Markdown, each with a runnable example
+- Pages: index (Overview), reference (Reference), explore (Explore), numbers (Algebraic numbers), complex (Complex numbers), angles (Angles and roots of unity), recognize (Recognising numbers), factoring (Factoring), polynomials (Polynomial toolkit), galois (Galois groups), number-fields (Number fields), finite-fields (Finite fields)
+
+## API
+
+name(params) → result — meaning · file:line · docs page
+
+- `AlgebraicReal class: rational, poly, lo, hi, refine, isRational, interval, toRational, toNumber` — A real algebraic number: a root of the square-free integer polynomial `poly` in the open interval (lo, hi), or an exact rational. · src/poly.js:253
+- `isolate(p: IntPoly) → AlgebraicReal[]` — Isolate the real roots of a square-free polynomial, ascending. · src/poly.js:195
+- `countRealRoots(p: IntPoly) → number` — Count of distinct real roots of a square-free polynomial. · src/poly.js:189
+- `squareFree(p: IntPoly) → Array<{ factor: IntPoly; multiplicity: number }>` — Yun's square-free factorisation: [{ factor, multiplicity }], factors primitive, nonconstant. · src/poly.js:131
+- `simplestBetween(a: Pair, b: Pair) → Pair` — The fraction with the smallest denominator in [a, b] (a ≤ b). · src/poly.js:238
+- `ComplexAlgebraic class: poly, re, im, conjugate, refine, box, toNumbers, toDecimal, toString, imSign` — A complex algebraic number: the unique root of the square-free integer polynomial `poly` in the box re × im (each [lo, hi] of pairs). · src/complex.js:77
+- `certifyComplexRoots(p: IntPoly, count: number) → ComplexAlgebraic[] | null` — Certified non-real roots of a square-free integer polynomial, given how many there are (from a Sturm count). · src/complex.js:172
+- `fromRational(x: RationalLike) → AlgebraicReal` — A rational (pair [n, d], Core Rational, bigint, number or string) as an AlgebraicReal. · src/arith.js:29 · numbers
+- `rationalOf(a: Algebraic) → Rational | null` — The exact rational value of a, or null. · src/arith.js:35
+- `roots(coeffs: PolyLike, options?: { complex?: boolean }) → Array<{ value: Algebraic; multiplicity: number }>` — All roots of an integer or rational polynomial (coefficients constant first, as bigints, pairs or Rationals), each with its multiplicity. · src/arith.js:62 · complex
+- `realRoots(coeffs: PolyLike) → Array<{ value: AlgebraicReal; multiplicity: number }>` — Real roots only (shorthand for roots(p)). · src/arith.js:88
+- `minimalPolynomial(a: Algebraic) → IntPoly` — The minimal polynomial of a (primitive integer, constant first). · src/arith.js:91 · numbers
+- `simplify(a: T) → T` — The same number, re-expressed on its minimal polynomial. · src/arith.js:100
+- `neg(a: T) → T` · src/arith.js:225 · number-fields
+- `add(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:236 · numbers
+- `sub(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:249 · number-fields
+- `mul(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:251 · numbers
+- `inv(a: Algebraic) → Algebraic` · src/arith.js:287
+- `div(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:307 · number-fields
+- `pow(a: Algebraic, k: number | RationalLike) → Algebraic` · src/arith.js:309 · complex
+- `sign(a: AlgebraicReal) → -1 | 0 | 1` — -1, 0 or 1 for a real a, exactly. · src/arith.js:266 · number-fields
+- `isZero(a: Algebraic) → boolean` · src/arith.js:277
+- `compare(a: AlgebraicReal, b: AlgebraicReal) → -1 | 0 | 1` — -1, 0, 1 as real a compares to real b. · src/arith.js:322 · numbers
+- `equals(a: Algebraic, b: Algebraic) → boolean` — Equality, exactly (works for complex numbers too). · src/arith.js:325 · numbers
+- `I() → ComplexAlgebraic` — The imaginary unit i, the root of x² + 1 with positive imaginary part. · src/arith.js:335 · complex
+- `conjugate(a: T) → T` · src/arith.js:340
+- `re(a: Algebraic) → AlgebraicReal` — Real part, as an exact real algebraic number. · src/arith.js:343 · complex
+- `im(a: Algebraic) → AlgebraicReal` — Imaginary part, as an exact real algebraic number. · src/arith.js:350 · complex
+- `nthRoot(a: Algebraic, n: number) → Algebraic` — The n-th root (n ≥ 2) of a. · src/arith.js:448 · numbers
+- `sqrt(a: Algebraic) → Algebraic` — The principal square root: √a ≥ 0 for real a ≥ 0, i·√(−a) for a < 0, the root with positive real part otherwise. · src/arith.js:488 · numbers
+- `isReal(a: unknown) → a is AlgebraicReal` · src/arith.js:19
+- `isComplex(a: unknown) → a is ComplexAlgebraic` · src/arith.js:20
+- `MAX_DEGREE: number` · src/arith.js:17
+- `complex(x: Algebraic | RationalLike, y?: Algebraic | RationalLike) → Algebraic` · src/arith.js:51 · complex
+- `norm(a: Algebraic) → AlgebraicReal` — |a|², exactly: a·ā (a real algebraic number). · src/arith.js:499
+- `abs(a: Algebraic) → AlgebraicReal` — |a|, exactly: the absolute value of a real, the modulus of a complex number. · src/arith.js:510 · complex
+- `format(a: Algebraic, options?: { digits?: number }) → string` — A readable exact form when one is cheap: rationals as fractions, quadratic irrationals as (p + q√d)/r, quadratic complex numbers as a + bi; otherwise… · src/arith.js:520 · numbers
+- `factor(p: IntPoly) → Factorization` — Factor an integer polynomial: { content, factors: [{ factor, multiplicity }] } with each factor primitive, irreducible over Q, positive leading coefficient. · src/factor.js:288 · factoring
+- `isIrreducible(p: IntPoly) → boolean` — True when p (degree ≥ 1) is irreducible over Q. · src/factor.js:303 · factoring
+- `factorModP(f: IntPoly, p: bigint) → Array<{ factor: bigint[]; multiplicity: number }> | bigint[][]` — Monic irreducible factors of f mod p; f must be square-free mod p (a RangeError says when it is not). · src/factor.js:160 · factoring
+- `NumberField class: elements, roots, degree` · src/numberfield.js:20 · number-fields
+- `NumberFieldElement class: field, c, add, sub, neg, mul, div, inv, pow, isZero, equals, norm, trace, coefficients, toRational, toAlgebraic, toString` · src/numberfield.js:97
+- `factorOver(K: NumberField, coeffs: FieldArg[]) → FieldFactorization` — Factor a polynomial with coefficients in K into irreducibles over K. · src/fieldpoly.js:110
+- `rootsIn(K: NumberField, coeffs: FieldArg[]) → Array<{ value: NumberFieldElement; multiplicity: number }>` — The roots of a polynomial that lie in K: [{ value, multiplicity }]. · src/fieldpoly.js:134
+- `extend(K: NumberField, coeffs: FieldArg[], options?: { name?: string; pick?: Algebraic }) → FieldExtension` — K(β) for a root β of g, irreducible over K, as a NumberField L = Q(γ) with γ = β + s·α. · src/fieldpoly.js:144
+- `fieldContaining(numbers: Algebraic[], options?: { name?: string }) → { field: NumberField; elements: NumberFieldElement[] }` — One field holding several exact algebraic numbers: { field, elements } with elements[i] the i-th number as an element of `field`, whose generator is… · src/fieldpoly.js:212
+- `splittingField(coeffs: PolyLike, options?: { name?: string }) → { field: NumberField; roots: NumberFieldElement[]; degree: number }` — The splitting field of a rational polynomial: { field, roots, degree } with every root as an element of `field` (repeated roots listed once). · src/fieldpoly.js:258
+- `primeField(p: bigint | number) → PrimeField` · src/finite.js:9 · finite-fields
+- `galoisField(p: bigint | number, k: number, modulus?: bigint[] | null) → GaloisField` — GF(p^k): elements are arrays of k BigInt coefficients (constant first) of a polynomial modulo `modulus`, a monic irreducible of degree k over F_p (found… · src/finite.js:184 · finite-fields
+- `isProbablePrime(n: bigint | number) → boolean` — Primality by the Baillie–PSW test: trial division, a strong test to base 2, then a strong Lucas test. · src/finite.js:161
+- `cosPi(r: RationalLike) → AlgebraicReal` — cos(πr) for rational r, exactly. · src/trig.js:101 · angles
+- `sinPi(r: RationalLike) → AlgebraicReal` — sin(πr) for rational r, exactly: cos(π(1/2 − r)). · src/trig.js:108 · angles
+- `tanPi(r: RationalLike) → AlgebraicReal` — tan(πr) for rational r, exactly (throws at the poles). · src/trig.js:115 · angles
+- `rootOfUnity(n: number, k?: number) → Algebraic` — The root of unity e^(2πik/n), exactly: an AlgebraicReal (±1) or a ComplexAlgebraic on the cyclotomic polynomial Φ_(n/gcd(k,n)). · src/trig.js:145 · angles
+- `rootsOfUnity(n: number) → Algebraic[]` — All n-th roots of unity, e^(2πik/n) for k = 0 … n − 1. · src/trig.js:169 · angles
+- `cyclotomic(n: number) → IntPoly` — The n-th cyclotomic polynomial Φₙ (BigInt, constant first). · src/trig.js:32 · angles
+- `chebyshevT(n: number) → IntPoly` — Tₙ(x), the Chebyshev polynomial of the first kind (BigInt, constant first). · src/trig.js:18
+- `cosMinimal(n: number) → IntPoly` — The minimal polynomial of cos(2π/n), n ≥ 3: Φₙ is palindromic, so x^(−h)Φₙ(x) is a polynomial in y = x + 1/x = 2cos θ, built from x^k + x^(−k) = Dₖ(y) with… · src/trig.js:63
+- `resultant(p: PolyLike, q: PolyLike) → Rational` — The resultant Res(p, q), exactly: zero iff p and q share a root. · src/polys.js:96 · polynomials
+- `discriminant(p: PolyLike) → Rational` — The discriminant: (−1)^(n(n−1)/2)·Res(p, p′)/lc. · src/polys.js:108 · polynomials
+- `countRoots(p: PolyLike, a?: RationalLike, b?: RationalLike) → number` — Number of distinct real roots in (a, b] (rationals or ±Infinity), by a Sturm sequence. · src/polys.js:119 · polynomials
+- `interpolate(points: Array<[RationalLike, RationalLike]>) → Rational[]` — The polynomial of least degree through the points [[x, y], …] (Newton's divided differences). · src/polys.js:128 · polynomials
+- `partialFractions(num: PolyLike, den: PolyLike) → PartialFractions` — Partial fractions over Q of num/den: { polynomial, terms: [{ factor, power, numerator }] } with num/den = polynomial + Σ numerator / factorᵖᵒʷᵉʳ, each… · src/polys.js:150 · polynomials
+- `factorInteger(n: bigint | number) → Array<{ prime: bigint; exponent: number }>` — Prime factorisation: [{ prime, exponent }] ascending (trial division, then Pollard rho). · src/nt.js:101 · finite-fields
+- `modPow(a: bigint, e: bigint, m: bigint) → bigint` — aᵉ mod m, e ≥ 0 (negative e uses the inverse). · src/nt.js:32
+- `modInverse(a: bigint, m: bigint) → bigint` — a⁻¹ mod m (throws when gcd(a, m) ≠ 1). · src/nt.js:24
+- `jacobi(a: bigint, n: bigint) → -1 | 0 | 1` — The Jacobi symbol (a/n) for odd n > 0; the Legendre symbol when n is prime. · src/nt.js:46
+- `sqrtMod(a: bigint, p: bigint) → bigint | null` — A square root of a modulo an odd prime p (Tonelli–Shanks), the smaller of the two; null when a is not a square. · src/nt.js:65 · finite-fields
+- `primitiveRoot(p: bigint) → bigint` — The least primitive root modulo a prime p. · src/nt.js:141
+- `multiplicativeOrder(a: bigint, n: bigint) → bigint` — The order of a in (Z/nZ)ˣ: the least k > 0 with aᵏ ≡ 1. · src/nt.js:127
+- `discreteLogMod(g: bigint, h: bigint, p: bigint) → bigint | null` — The least x ≥ 0 with gˣ ≡ h (mod p), p prime, or null. · src/nt.js:186 · finite-fields
+- `totient(n: bigint) → bigint` — Euler's φ(n). · src/nt.js:120
+- `galoisGroup(coeffs: PolyLike) → GaloisGroup` — The Galois group of an integer or rational polynomial of degree ≤ 5: { degree, name ("S4", "D5", …), order, label (transitive-group "nTk"), solvable,… · src/galois.js:53 · galois
+- `galoisAction(coeffs: PolyLike) → GaloisAction` — The Galois group of an irreducible polynomial of degree ≤ 7 as permutations of its roots. · src/galois.js:792 · galois
+- `GaloisAction class: polynomial, degree, roots, group, name, label, order, solvable, discriminant, discriminantIsSquare, orbitsOnPairs, orbitsOnTriples, conjugation, permutations, fixedField, correspondence, frobenius, toString` — The Galois group of an irreducible polynomial of degree ≤ 7 acting on its numbered roots, with the tools of the Galois correspondence. · src/galois.js:596
+- `PermGroup class: symmetric, alternating, from, degree, generators, order, isTransitive, isAbelian, isCyclic, isEven, isSolvable, has, contains, equals, orbits, orbitsOnSets, cycleTypes, subgroup, conjugate, isNormal, cosets, derivedSubgroup, derivedSeries, withSmallGenerators, subgroupClasses, toString` · src/permgroup.js:96
+- `cycleString(p: Permutation) → string` — Cycle notation counted from 1: "(1 2 3)(4 5)", and "()" for the identity. · src/permgroup.js:34
+- `fromCycles(text: string, n: number) → Permutation` — Reads "(1 2 3)(4 5)" as a permutation of n points. · src/permgroup.js:40
+- `cycleType(p: Permutation) → number[]` — The cycle type, a partition of n such as [3, 2, 1, 1]. · src/permgroup.js:31
+- `lll(rows: bigint[][], delta?: Pair) → bigint[][]` — LLL-reduce a basis of integer row vectors (BigInt arrays), δ = 3/4. · src/lll.js:25 · recognize
+- `recognize(x: string | number, options?: { maxDegree?: number; margin?: number }) → Recognized | null` — Guess an algebraic number from its digits. · src/lll.js:101 · recognize
+
+## Namespaces
+
+- `poly` (src/poly.js): degree, trim, primitive, fromPairs, derivative, signAt, evalAt, polyGcd, divide, squareFree, countRealRoots, isolate, simplestBetween, AlgebraicReal, countRootsBetween, Rational
+- `qpoly` (src/qpoly.js): isZeroQ, trimQ, degQ, isZeroPoly, addP, subP, mulP, divmodP, modP, monicP, gcdP, scaleP, constP, xP, toIntPoly, fromIntPoly, evalP, formatP, reduce
+- `interval` (src/interval.js): iv, toCore, ivAdd, ivSub, ivMul, ivMid, ivWidth, ivInside, ivIntersect, outward, krawczykStep, krawczyk, Rational
+- `polys` (src/polys.js): add, sub, mul, divmod, gcd, gcdExt, evaluate, compose, derivative, fromRoots, toInteger, format, resultant, discriminant, countRoots, interpolate, partialFractions, derivativeInt
+- `nt` (src/nt.js): egcd, modInverse, modPow, jacobi, sqrtMod, factorInteger, totient, multiplicativeOrder, orderIn, primitiveRoot, discreteLog, discreteLogMod, isProbablePrime
+
+## Example
+
+```js
+import { fromRational, roots, add, mul, sqrt, format, cosPi, galoisGroup } from "@ratmath/algebraic";
+const r2 = sqrt(fromRational(2));
+const s = add(r2, sqrt(fromRational(3)));
+console.log("√2 + √3 =", s.toString(20));
+console.log("its minimal polynomial (constant first):", s.poly);
+console.log("(√2 + √3)² =", format(mul(s, s)));
+console.log("cos(π/5) =", format(cosPi("1/5")));
+console.log("roots of x³ − 2:", roots([-2, 0, 0, 1], { complex: true }).map((r) => format(r.value)));
+galoisGroup([-2, 0, 0, 0, 1]).name
+```
+
+## More
+
+- tests/: worked examples for every function
+- https://ratmath.com/core/ (numbers), https://ratmath.com/shelf/ (all the libraries)
