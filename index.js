@@ -6,7 +6,7 @@
 export { AlgebraicReal, isolate, countRealRoots, squareFree, simplestBetween } from "./src/poly.js";
 export { ComplexAlgebraic, certifyComplexRoots } from "./src/complex.js";
 export {
-  fromRational, rationalOf, roots, realRoots, minimalPolynomial, simplify,
+  fromRational, num, rationalOf, roots, realRoots, minimalPolynomial, simplify,
   neg, add, sub, mul, inv, div, pow, sign, isZero, compare, equals,
   I, conjugate, re, im, nthRoot, sqrt, isReal, isComplex, MAX_DEGREE,
   complex, norm, abs, format,

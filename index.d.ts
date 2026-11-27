@@ -1,10 +1,10 @@
 // Type declarations for @ratmath/algebraic.
-import type { Rational } from "@ratmath/core";
+import type { Rational, Integer } from "@ratmath/core";
 
 /** A rational as an exact pair [numerator, denominator], denominator > 0. */
 export type Pair = [bigint, bigint];
 /** Anything read as an exact rational: a pair, a Core Rational, a bigint, an integer number or a string such as "3/4". */
-export type RationalLike = Pair | Rational | bigint | number | string;
+export type RationalLike = Pair | Rational | Integer | bigint | number | string;
 /** An integer polynomial, constant term first. */
 export type IntPoly = bigint[];
 /** A polynomial with rational coefficients, constant term first. */
@@ -47,38 +47,42 @@ export class ComplexAlgebraic {
 }
 
 export type Algebraic = AlgebraicReal | ComplexAlgebraic;
+/** An algebraic number, or a plain number read as a rational one. */
+export type AlgebraicLike = Algebraic | RationalLike;
 
 export const MAX_DEGREE: number;
 export function fromRational(x: RationalLike): AlgebraicReal;
+/** a as an algebraic number: plain numbers become rational AlgebraicReals. */
+export function num(a: AlgebraicLike): Algebraic;
 export function rationalOf(a: Algebraic): Rational | null;
 export function roots(coeffs: PolyLike, options?: { complex?: boolean }): Array<{ value: Algebraic; multiplicity: number }>;
 export function realRoots(coeffs: PolyLike): Array<{ value: AlgebraicReal; multiplicity: number }>;
-export function minimalPolynomial(a: Algebraic): IntPoly;
+export function minimalPolynomial(a: AlgebraicLike): IntPoly;
 export function simplify<T extends Algebraic>(a: T): T;
 export function neg<T extends Algebraic>(a: T): T;
-export function add(a: Algebraic, b: Algebraic): Algebraic;
-export function sub(a: Algebraic, b: Algebraic): Algebraic;
-export function mul(a: Algebraic, b: Algebraic): Algebraic;
-export function div(a: Algebraic, b: Algebraic): Algebraic;
-export function inv(a: Algebraic): Algebraic;
-export function pow(a: Algebraic, k: number | RationalLike): Algebraic;
-export function sign(a: AlgebraicReal): -1 | 0 | 1;
-export function isZero(a: Algebraic): boolean;
-export function compare(a: AlgebraicReal, b: AlgebraicReal): -1 | 0 | 1;
-export function equals(a: Algebraic, b: Algebraic): boolean;
+export function add(a: AlgebraicLike, b: AlgebraicLike): Algebraic;
+export function sub(a: AlgebraicLike, b: AlgebraicLike): Algebraic;
+export function mul(a: AlgebraicLike, b: AlgebraicLike): Algebraic;
+export function div(a: AlgebraicLike, b: AlgebraicLike): Algebraic;
+export function inv(a: AlgebraicLike): Algebraic;
+export function pow(a: AlgebraicLike, k: number | RationalLike): Algebraic;
+export function sign(a: AlgebraicReal | RationalLike): -1 | 0 | 1;
+export function isZero(a: AlgebraicLike): boolean;
+export function compare(a: AlgebraicReal | RationalLike, b: AlgebraicReal | RationalLike): -1 | 0 | 1;
+export function equals(a: AlgebraicLike, b: AlgebraicLike): boolean;
 export function I(): ComplexAlgebraic;
 export function conjugate<T extends Algebraic>(a: T): T;
-export function re(a: Algebraic): AlgebraicReal;
-export function im(a: Algebraic): AlgebraicReal;
-export function nthRoot(a: Algebraic, n: number): Algebraic;
-export function sqrt(a: Algebraic): Algebraic;
+export function re(a: AlgebraicLike): AlgebraicReal;
+export function im(a: AlgebraicLike): AlgebraicReal;
+export function nthRoot(a: AlgebraicLike, n: number): Algebraic;
+export function sqrt(a: AlgebraicLike): Algebraic;
 export function isReal(a: unknown): a is AlgebraicReal;
 export function isComplex(a: unknown): a is ComplexAlgebraic;
 export function complex(x: Algebraic | RationalLike, y?: Algebraic | RationalLike): Algebraic;
-export function norm(a: Algebraic): AlgebraicReal;
-export function abs(a: Algebraic): AlgebraicReal;
+export function norm(a: AlgebraicLike): AlgebraicReal;
+export function abs(a: AlgebraicLike): AlgebraicReal;
 /** Exact text where one exists (3/4, (1 + √5)/2, √(2 + √2)/2, ∛2, 1 + i√3), else certified decimals ending in "…". */
-export function format(a: Algebraic, options?: { digits?: number }): string;
+export function format(a: AlgebraicLike, options?: { digits?: number }): string;
 
 export function isolate(p: IntPoly): AlgebraicReal[];
 export function countRealRoots(p: IntPoly): number;

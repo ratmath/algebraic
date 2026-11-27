@@ -31,6 +31,13 @@ export function fromRational(x) {
   return AlgebraicReal.rational(reduce(BigInt(n), BigInt(d)));
 }
 
+/**
+ * An algebraic number as given, or a plain number (bigint, number, numeric
+ * string, Core Rational or Integer, [n, d] pair) read as a rational one, so
+ * that sqrt(2) and add(sqrt(2), 1) work without fromRational.
+ */
+export const num = (a) => (isReal(a) || isComplex(a) ? a : fromRational(a));
+
 /** The exact rational value of a, or null. */
 export const rationalOf = (a) => (isReal(a) ? a.rational : null);
 
@@ -89,6 +96,7 @@ export const realRoots = (coeffs) => roots(coeffs);
 
 /** The minimal polynomial of a (primitive integer, constant first). */
 export function minimalPolynomial(a) {
+  a = num(a);
   const r = a.rational;
   if (r) return primitive([-r[0], r[1]]);
   const { factors } = factor(a.poly);
@@ -98,6 +106,7 @@ export function minimalPolynomial(a) {
 
 /** The same number, re-expressed on its minimal polynomial. */
 export function simplify(a) {
+  a = num(a);
   if (a.rational) return a;
   const { factors } = factor(a.poly);
   if (factors.length === 1) return a;
@@ -223,6 +232,7 @@ function usable(a) {
 // Operations
 
 export function neg(a) {
+  a = num(a);
   if (isReal(a)) {
     const r = a.rational;
     if (r) return fromRational([-r[0], r[1]]);
@@ -234,6 +244,8 @@ export function neg(a) {
 }
 
 export function add(a, b) {
+  a = num(a);
+  b = num(b);
   const ra = a.rational;
   const rb = b.rational;
   if (ra && rb) return fromRational(addQ(ra, rb));
@@ -249,6 +261,8 @@ export function add(a, b) {
 export const sub = (a, b) => add(a, neg(b));
 
 export function mul(a, b) {
+  a = num(a);
+  b = num(b);
   const ra = a.rational;
   const rb = b.rational;
   if (ra && rb) return fromRational(mulQ(ra, rb));
@@ -264,6 +278,7 @@ export function mul(a, b) {
 
 /** -1, 0 or 1 for a real a, exactly. */
 export function sign(a) {
+  a = num(a);
   if (!isReal(a)) throw new TypeError("sign needs a real number");
   const r = a.rational;
   if (r) return r[0] > 0n ? 1 : r[0] < 0n ? -1 : 0;
@@ -275,6 +290,7 @@ export function sign(a) {
 }
 
 export const isZero = (a) => {
+  a = num(a);
   const r = a.rational;
   return r ? r[0] === 0n : false; // an irrational or non-real number is never 0
 };
@@ -285,6 +301,7 @@ function ivInv([lo, hi]) {
 }
 
 export function inv(a) {
+  a = num(a);
   if (isZero(a)) throw new RangeError("division by zero");
   const r = a.rational;
   if (r) return fromRational([r[1], r[0]]);
@@ -307,6 +324,7 @@ export function inv(a) {
 export const div = (a, b) => mul(a, inv(b));
 
 export function pow(a, k) {
+  a = num(a);
   if (k < 0) return pow(inv(a), -k);
   let out = fromRational([1n, 1n]);
   let base = a;
@@ -323,6 +341,8 @@ export const compare = (a, b) => sign(sub(a, b));
 
 /** Equality, exactly (works for complex numbers too). */
 export function equals(a, b) {
+  a = num(a);
+  b = num(b);
   if (isReal(a) !== isReal(b)) return false;
   const ra = a.rational;
   const rb = b.rational;
@@ -337,10 +357,11 @@ export function I() {
   return I_CACHE;
 }
 
-export const conjugate = (a) => (isReal(a) ? a : a.conjugate());
+export const conjugate = (a) => ((a = num(a)), isReal(a) ? a : a.conjugate());
 
 /** Real part, as an exact real algebraic number. */
 export function re(a) {
+  a = num(a);
   if (isReal(a)) return a;
   if (degree(a.poly) === 2) return fromRational(reduce(-a.poly[1], 2n * a.poly[2]));
   const s = add(a, a.conjugate());
@@ -348,6 +369,7 @@ export function re(a) {
 }
 /** Imaginary part, as an exact real algebraic number. */
 export function im(a) {
+  a = num(a);
   if (isReal(a)) return fromRational([0n, 1n]);
   if (degree(a.poly) === 2) {
     // (b² − 4ac) < 0: Im = ±√(4ac − b²) / 2a, sign from the box
@@ -446,6 +468,7 @@ function principalRoot(z, n) {
  * even; for non-real a the principal root (largest real part).
  */
 export function nthRoot(a, n) {
+  a = num(a);
   if (!Number.isInteger(n) || n < 2) throw new RangeError("nthRoot needs n ≥ 2");
   if (!isReal(a)) return principalRoot(a, n);
   const sg = sign(a);
@@ -497,6 +520,7 @@ export function complex(x, y = 0) {
 
 /** |a|², exactly: a·ā (a real algebraic number). */
 export function norm(a) {
+  a = num(a);
   if (isReal(a)) return mul(a, a);
   if (degree(a.poly) === 2) {
     // a·ā is the product of the two roots: c/a
@@ -508,6 +532,7 @@ export function norm(a) {
 
 /** |a|, exactly: the absolute value of a real, the modulus of a complex number. */
 export function abs(a) {
+  a = num(a);
   if (isReal(a)) return sign(a) < 0 ? neg(a) : a;
   return nthRoot(norm(a), 2);
 }
@@ -518,6 +543,7 @@ export function abs(a) {
  * certified digits. `{ digits }` sets how many.
  */
 export function format(a, { digits = 12 } = {}) {
+  a = num(a);
   if (isReal(a)) {
     const r = a.rational;
     if (r) return fmtQ(r);

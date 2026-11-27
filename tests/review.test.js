@@ -1,5 +1,7 @@
 // Fixes and additions from the 2026-11 review.
 import { describe, test, expect } from "bun:test";
+import * as A from "../index.js";
+import { Rational, Integer } from "@ratmath/core";
 import {
   roots, isProbablePrime, primeField, tanPi, sinPi, cosPi, div, equals, minimalPolynomial, isolate, nthRoot, sqrt,
   fromRational as q, add, mul, neg, format, interpolate, NumberField, splittingField, fieldContaining, factorOver,
@@ -157,3 +159,21 @@ describe("format of negated denested radicals", () => {
   });
 });
 
+
+describe("plain numbers are read as rational algebraic numbers", () => {
+  test("sqrt, nthRoot and arithmetic take numbers, bigints, strings, Rationals and Integers", () => {
+    expect(A.sqrt(48).toString(4)).toBe(A.sqrt(A.fromRational(48)).toString(4));
+    expect(A.format(A.sqrt(48))).toBe("4√3");
+    expect(A.format(A.sqrt(new Integer(144n)))).toBe("12");
+    expect(A.format(A.sqrt(new Rational(9n, 4n)))).toBe("3/2");
+    expect(A.format(A.nthRoot(27n, 3))).toBe("3");
+    expect(A.format(A.sqrt("1/2"))).toBe(A.format(A.sqrt(A.fromRational([1n, 2n]))));
+    expect(A.format(A.add(A.sqrt(2), 1))).toBe(A.format(A.add(A.sqrt(A.fromRational(2)), A.fromRational(1))));
+    expect(A.format(A.mul(2, A.sqrt(3)))).toBe("2√3");
+    expect(A.compare(A.sqrt(2), "1.5")).toBe(-1);
+    expect(A.sign(-3)).toBe(-1);
+    expect(A.isZero(0)).toBe(true);
+    expect(A.equals(A.sqrt(4), 2)).toBe(true);
+    expect(A.format(A.sqrt(-4))).toBe(A.format(A.mul(A.I(), A.fromRational(2))));
+  });
+});
