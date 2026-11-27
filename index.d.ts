@@ -29,7 +29,12 @@ export class AlgebraicReal {
   toNumber(): number;
   /** Decimal digits, the last one certain up to one unit; ends in "…" when irrational. */
   toString(digits?: number): string;
+  /** Rounded to k decimal places with a Core rounding mode (default "half-even"), decided exactly. */
+  roundTo(k?: number, mode?: RoundingMode): Rational;
+  /** k decimal places as a string, rounded with roundTo: every digit is certain. */
+  toFixed(k?: number, mode?: RoundingMode): string;
 }
+export type RoundingMode = "half-even" | "half-up" | "toward-zero" | "floor" | "ceil";
 
 /** A non-real algebraic number: a root of `poly` in a certified box re × im. */
 export class ComplexAlgebraic {

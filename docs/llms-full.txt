@@ -1,6 +1,6 @@
 # @ratmath/algebraic 0.1.0: full documentation
 
-> Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath. From https://ratmath.com/algebraic/, commit 92bae17. Each page ends with a runnable example; in it, PRINT(...) prints.
+> Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath. From https://ratmath.com/algebraic/, commit b72940c. Each page ends with a runnable example; in it, PRINT(...) prints.
 
 
 ---
@@ -362,6 +362,8 @@ The minimal polynomial of a is the irreducible integer polynomial with a as a ro
 
 `format(a)` writes a number exactly when a short exact form exists: fractions for rationals, (p + q√d)/r for degree 2, nested radicals such as √(2 + √2)/2 for degree 4 numbers whose square is quadratic (denested to (√6 + √2)/4 when possible). Other numbers print as certified digits ending in "…". `toString(n)` always gives n digits.
 
+`toFixed(k, mode)` rounds to k decimal places and every digit it writes is certain. The interval is refined until no rounding boundary lies strictly inside it; an irrational number is never on a boundary, so this always ends, and a rational value is rounded exactly, so a tie such as 5/2 follows the mode (`"half-even"` by default, or `"half-up"`, `"toward-zero"`, `"floor"`, `"ceil"`). `roundTo(k, mode)` gives the same result as a Core Rational.
+
 ### In code
 
 ```js
@@ -370,6 +372,7 @@ const two = fromRational(2);
 const a = add(sqrt(two), nthRoot(two, 3));
 a.poly;                        // its minimal polynomial (degree 6)
 a.interval(64);                // [lo, hi] as Core Rationals, width below 2⁻⁶⁴
+a.toFixed(10);                 // "2.6741346123", every digit certain
 compare(a, fromRational("2.6")); // 1, decided exactly
 equals(mul(sqrt(two), sqrt(two)), two); // true
 ```
@@ -385,6 +388,7 @@ PRINT("√2 + ∛2 ≈", a.toString(20));
 PRINT("minimal polynomial, degree", a.poly.length - 1, ":", a.poly);
 PRINT("an interval of width < 2⁻⁶⁴:", a.interval(64));
 PRINT("compare with 2.6:", compare(a, fromRational("2.6")));
+PRINT("to 30 places:", a.toFixed(30), " floor to 3:", a.toFixed(3, "floor"), " 5/2 to 0 places, half-even and half-up:", fromRational("5/2").toFixed(0), fromRational("5/2").toFixed(0, "half-up"));
 equals(mul(sqrt(two), sqrt(two)), two)
 ```
 
