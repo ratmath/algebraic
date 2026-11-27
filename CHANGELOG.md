@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- Plain numbers work wherever an algebraic number is expected: `sqrt(48)`,
+  `nthRoot(27n, 3)`, `add(sqrt(2), 1)`, `compare(sqrt(2), "1.5")` and the rest
+  of the arithmetic read a bigint, number, numeric string, Core `Rational` or
+  `Integer` as a rational algebraic number (they used to fail with
+  "p.map is not a function"). The coercion is exported as `num`. Found by the
+  Course Test (ratmath/shelf#7).
 - `@ratmath/core` is now a peer dependency (`>=0.10.0 <0.12.0`): the package
   uses the program's own copy of Core instead of bringing its own, so Core 0.11
   works and there is never a second copy whose `Rational` is not the same class.
