@@ -1,0 +1,916 @@
+# @ratmath/algebraic 0.1.0: full documentation
+
+> Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath. From https://ratmath.com/algebraic/, commit 92bae17. Each page ends with a runnable example; in it, PRINT(...) prints.
+
+
+---
+
+Page: https://ratmath.com/algebraic/index.html
+
+@ratmath/algebraic
+
+## Square roots, cube roots and every other root, held exactly
+
+A JavaScript library for algebraic numbers: the roots of polynomials with whole-number coefficients. √2 + √3, the cube roots of 2, cos(π/7) and i are values you can add, multiply, compare and test for equality with no rounding, and print to as many digits as you like.
+
+### How a number is held
+
+An algebraic number is stored as a polynomial with integer coefficients plus a small region that contains exactly one of its roots: an interval for a real root, a box in the complex plane for the others. The polynomial is the exact part; the region only says which root is meant, and it can be shrunk whenever more digits are wanted.
+
+Arithmetic builds a new polynomial for the result (a resultant), factors it, and keeps the factor the answer is a root of, so every number carries its minimal polynomial. That is why the library can say exactly that (√2 + √3)² = 5 + 2√6, or that a messy expression is precisely 0.
+
+### A first program
+
+```js
+import { sqrt, add, mul, fromRational, format, roots, cosPi, factor, galoisGroup } from "@ratmath/algebraic";
+
+const r2 = sqrt(fromRational(2));
+const s = add(r2, sqrt(fromRational(3)));
+s.toString(20);                 // "3.14626436994197234232…"   certified digits
+s.poly;                         // [1n, 0n, -10n, 0n, 1n]      x⁴ − 10x² + 1
+format(mul(s, s));              // "5 + 2√6"
+format(cosPi("1/5"));           // "(1 + √5)/4"
+roots([-2, 0, 0, 1], { complex: true }).map((r) => format(r.value));
+                                // ∛2 and its two complex partners
+factor([-1, 0, 0, 0, 0, 0, 1]); // x⁶ − 1 into four irreducible factors
+galoisGroup([-2, 0, 0, 0, 1]).name;  // "D4"
+```
+
+Polynomials are arrays of coefficients, constant term first: `[-2, 0, 0, 1]` is x³ − 2. Coefficients can be numbers, BigInts, strings like `"3/4"` or Core Rationals.
+
+### What is in it
+
+- Algebraic numbers, real and complex: arithmetic, roots of any order, exact comparison and equality, modulus, real and imaginary parts, readable exact forms such as (1 + √5)/2 and −1/2 + i√3/2.
+
+- Exact trigonometry: cos, sin and tan at rational multiples of π, roots of unity, cyclotomic polynomials.
+
+- Polynomials: factoring over the integers, resultants, discriminants, root counting, interpolation, partial fractions, Galois groups up to degree 7, with their subgroups and fixed fields.
+
+- Structures: number fields Q(α), finite fields GF(pᵏ), modular arithmetic. Continued fractions and Pell's equation are in @ratmath/numtheory.
+
+- Recognition: turn a decimal like 1.6180339887 back into (1 + √5)/2 with lattice reduction.
+
+### Topics
+
+Each topic page explains the mathematics and lets you run it. [Explore](https://ratmath.com/algebraic/explore.html) is a free-form calculator for all of it; [Reference](https://ratmath.com/algebraic/reference.html) lists every function.
+
+### Install
+
+```js
+bun add github:ratmath/algebraic    # depends on @ratmath/core
+```
+
+The library is pure JavaScript with BigInt arithmetic and no floating point in any answer. Floats appear only to find a first guess, which is then proven or discarded. @ratmath/linalg uses it for eigenvalues and exact fields.
+
+### Try it
+
+```js
+const r2 = sqrt(fromRational(2));
+const s = add(r2, sqrt(fromRational(3)));
+PRINT("√2 + √3 =", s.toString(20));
+PRINT("its minimal polynomial (constant first):", s.poly);
+PRINT("(√2 + √3)² =", format(mul(s, s)));
+PRINT("cos(π/5) =", format(cosPi("1/5")));
+PRINT("roots of x³ − 2:", roots([-2, 0, 0, 1], { complex: true }).map((r) => format(r.value)));
+galoisGroup([-2, 0, 0, 0, 1]).name
+```
+
+---
+
+Page: https://ratmath.com/algebraic/reference.html
+
+Reference
+
+## Everything in the library
+
+Every export of `@ratmath/algebraic`. Polynomials are coefficient arrays, constant term first; rationals inside the library are [n, d] BigInt pairs, and results meant for you are Core Rationals.
+
+| Function | What it does |
+
+| Making numbers |
+
+| fromRational(x) | A rational (number, BigInt, string like "3/4" or "0.1", Core Rational, [n, d]) as an AlgebraicReal. |
+
+| roots(p, { complex }) | All roots of an integer or rational polynomial as a list of { value, multiplicity }: real ones ascending as AlgebraicReal, then (with complex: true) the others as ComplexAlgebraic. Each on its minimal polynomial. |
+
+| realRoots(p) | Shorthand for roots(p). |
+
+| complex(x, y) | x + iy from real parts (rationals or AlgebraicReals). |
+
+| I() | The imaginary unit, root of x² + 1 with positive imaginary part. |
+
+| fromQuadratic(p, q, d, r) | (p + q√d)/r as an exact AlgebraicReal. |
+
+| new AlgebraicReal(poly, lo, hi) | The unique root of a square-free integer polynomial in the open interval (lo, hi) (pairs [n, d]). |
+
+| new ComplexAlgebraic(poly, re, im) | The unique root in a certified box re × im. |
+
+| Arithmetic |
+
+| add(a, b), sub, mul, div | Exact arithmetic by resultants; results are put on their minimal polynomials. |
+
+| neg(a), inv(a) | Negation and reciprocal (reversed coefficients). |
+
+| pow(a, k) | Integer power, k may be negative. |
+
+| nthRoot(a, n) | Positive real root of a positive real; real root of a negative real for odd n; principal (largest real part) root otherwise. |
+
+| sqrt(a) | Principal square root: √a, i√(−a), or the root with positive real part. |
+
+| abs(a), norm(a) | \|a\| and \|a\|² as exact real algebraic numbers. |
+
+| re(a), im(a), conjugate(a) | Real and imaginary parts and conjugate, exactly. |
+
+| sign(a), compare(a, b) | −1, 0 or 1 for reals, decided exactly. |
+
+| equals(a, b), isZero(a) | Exact equality, real or complex. |
+
+| isReal(a), isComplex(a) | Which kind of number. |
+
+| minimalPolynomial(a), simplify(a) | The minimal polynomial (primitive integer, constant first); the same number re-expressed on it. |
+
+| rationalOf(a) | [n, d] when a is rational, else null. |
+
+| MAX_DEGREE | 64: the largest degree a result&#x27;s polynomial may have. |
+
+| Reading a number |
+
+| format(a, { digits }) | Exact readable form when cheap: fraction, (p + q√d)/r, nested radical, pure roots such as ∛2 or 1 + 2⁵√3, a + bi; else certified digits ending in … |
+
+| a.toString(digits) | AlgebraicReal: digits with the last one certain to one unit (exact for rationals). ComplexAlgebraic: exact a + bi for degree 2, else digits for each part. |
+
+| a.refine(bits) | Shrink the isolating interval or box below 2⁻ᵇⁱᵗˢ. |
+
+| a.interval(bits) | AlgebraicReal: [lo, hi] as Core Rationals. |
+
+| a.box(bits) | ComplexAlgebraic: { re: [lo, hi], im: [lo, hi] } as Core Rationals. |
+
+| a.toRational(), a.isRational | The exact value when rational (decided exactly), else null. |
+
+| a.toNumber(), a.toNumbers() | Nearest double; { re, im } for complex. |
+
+| a.poly, a.lo, a.hi, a.re, a.im | The defining polynomial and the current enclosure. |
+
+| Angles and roots of unity |
+
+| cosPi(r), sinPi(r), tanPi(r) | cos(πr), sin(πr), tan(πr) for rational r, exactly (denominators up to 1000). |
+
+| rootOfUnity(n, k = 1) | e^(2πik/n), exactly. |
+
+| rootsOfUnity(n) | All n of them, k = 0 … n − 1. |
+
+| cyclotomic(n) | The cyclotomic polynomial Φₙ. |
+
+| cosMinimal(n) | The minimal polynomial of cos(2π/n). |
+
+| chebyshevT(n) | The Chebyshev polynomial Tₙ. |
+
+| Recognition |
+
+| recognize(x, { maxDegree, margin }) | Guess an algebraic number from a decimal string or interval; { value, poly, degree, height, digitsUsed, digitsNeeded } or null. |
+
+| lll(rows, delta) | LLL-reduce a basis of integer vectors (exact rational Gram–Schmidt). |
+
+| Factoring |
+
+| factor(p) | { content, factors: [{ factor, multiplicity }] } over the integers, each factor primitive and irreducible (Zassenhaus). |
+
+| isIrreducible(p) | True when p is irreducible over Q. |
+
+| factorModP(p, prime) | Irreducible factors of a square-free polynomial over F_p (Cantor–Zassenhaus). |
+
+| squareFree(p) | Yun&#x27;s square-free factorisation [{ factor, multiplicity }]. |
+
+| Polynomial toolkit |
+
+| resultant(p, q) | Res(p, q) as a Core Rational. |
+
+| discriminant(p) | The discriminant as a Core Rational. |
+
+| countRoots(p, a, b) | Distinct real roots in (a, b] (Sturm); a, b default to ±∞. |
+
+| interpolate(points) | The least-degree polynomial through [[x, y], …]. |
+
+| partialFractions(num, den) | { polynomial, terms: [{ factor, power, numerator }] }. |
+
+| polys.add, sub, mul, divmod | Arithmetic over Q; divmod returns { quotient, remainder }. |
+
+| polys.gcd, gcdExt | Monic gcd; { gcd, s, t } with s·p + t·q = gcd. |
+
+| polys.evaluate, compose, derivative | p(x) at a rational, p(q(x)), p′. |
+
+| polys.fromRoots, toInteger, format | Monic polynomial with given rational roots; primitive integer form; human-readable text. |
+
+| isolate(p), countRealRoots(p) | Isolating intervals and the number of real roots of a square-free integer polynomial. |
+
+| simplestBetween(a, b) | The fraction with the smallest denominator in [a, b] (pairs). |
+
+| Galois groups |
+
+| galoisGroup(p) | Degree ≤ 7: { degree, name, order, label, solvable, discriminant, discriminantIsSquare }; reducible input gives { reducible, factors }. |
+
+| galoisAction(p) | Irreducible, degree ≤ 7. The group as permutations of the numbered roots: roots, group (a PermGroup), name, label, order, solvable, conjugation, orbitsOnPairs, orbitsOnTriples. |
+
+| a.permutations() | Every element in cycle notation, counted from 1. |
+
+| a.fixedField(H) | H is a PermGroup or cycle strings. { degree, polynomial, generator, substitution?, normal }: the minimal polynomial of a sum of products of roots that generates the field H fixes. |
+
+| a.correspondence({ maxDegree = 60 }) | One row per subgroup class: { subgroup, order, index, conjugates, normal, field, above }. |
+
+| a.frobenius(count = 200) | { primes, patterns: [{ type, elements, expected, primes, observed, first }] }: factor degrees modulo primes against the cycle types of the group. |
+
+| a.derivedSeries() | Orders of G ⊇ G′ ⊇ G″ ⊇ …; reaches 1 exactly when the roots are expressible by radicals. |
+
+| new PermGroup(generators, n) | Also PermGroup.symmetric(n), .alternating(n), .from(["(1 2 3)"], n). elements, order, has, contains, orbits, orbitsOnSets(k), cycleTypes, subgroup, conjugate, isNormal, cosets, derivedSubgroup, derivedSeries, isSolvable, subgroups, subgroupClasses. |
+
+| cycleString(p), fromCycles(text, n), cycleType(p) | Cycle notation for a permutation given as the array of images of 0 … n−1. |
+
+| Continued fractions |
+
+| Moved to @ratmath/numtheory, with Pell equations and fundamental units. |
+
+| Number fields |
+
+| new NumberField(minpoly, { name, root }) | Q(α) for an irreducible polynomial; root picks the embedding (index, or "positive"). |
+
+| NumberField.quadratic(d), NumberField.gaussian() | Q(√d) and Q(i). |
+
+| K.of(x), K.gen, K.zero, K.one | Elements from a rational or a coefficient list in α. |
+
+| g.add, sub, mul, div, inv, pow, neg | Field arithmetic (polynomials mod m, inverses by extended Euclid). |
+
+| g.norm(), g.trace() | Field norm and trace as Core Rationals. |
+
+| g.equals, isZero, coefficients, toRational | Comparison and coefficient access. |
+
+| K.factor(p) | { unit, factors: [{ factor, multiplicity }] }: a polynomial with coefficients in K factored into irreducibles over K (Trager&#x27;s method). Also factorOver(K, p). |
+
+| K.roots(p) | The roots of p that lie in K, with multiplicities. |
+
+| K.extend(g, { name }) | { field, embed, root }: K(β) for a root β of g, irreducible over K, as a new NumberField; embed carries elements of K over. |
+
+| NumberField.containing([a, b, …]) | { field, elements }: one field holding several exact numbers, each as an element. Also fieldContaining. |
+
+| NumberField.splitting(p) | { field, roots, degree }: the splitting field of a rational polynomial with every root as an element. Also splittingField. |
+
+| g.toAlgebraic() | The exact AlgebraicReal or ComplexAlgebraic through the field&#x27;s embedding. |
+
+| K.add(a, b), K.mul, …, K.sign | Field-object interface for field-generic algorithms. |
+
+| Finite fields |
+
+| primeField(p) | F_p: { zero, one, add, sub, mul, div, neg, inv, pow, sign, equals, from, order, primitive, log, sqrt, elements, format, size }. |
+
+| galoisField(p, k, modulus) | GF(pᵏ), elements as k coefficients; also gen, modulus, order, primitive, log, elements, format. |
+
+| isProbablePrime(n) | Baillie–PSW: trial division, a strong test to base 2 and a strong Lucas test. Proven below 2⁶⁴; no composite that passes is known. Takes a BigInt or an integer Number. |
+
+| Number theory |
+
+| factorInteger(n) | [{ prime, exponent }] by trial division and Pollard rho. |
+
+| modPow(a, e, m), modInverse(a, m) | Powers and inverses mod m. |
+
+| jacobi(a, n) | Jacobi (Legendre) symbol. |
+
+| sqrtMod(a, p) | Square root mod an odd prime (Tonelli–Shanks), or null. |
+
+| primitiveRoot(p), multiplicativeOrder(a, n) | Least primitive root; order of a unit. |
+
+| discreteLogMod(g, h, p) | Least x with gˣ ≡ h (baby-step giant-step), or null. |
+
+| totient(n) | Euler φ. |
+
+| nt.egcd, nt.discreteLog, nt.orderIn | Extended gcd; generic BSGS and order finding for any group. |
+
+| Lower level |
+
+| poly, qpoly, interval | Namespaces: integer polynomials and Sturm sequences, rational polynomials, interval arithmetic and the Krawczyk operator (also subpath exports @ratmath/algebraic/poly, /qpoly, /interval, /complex, /q). |
+
+| certifyComplexRoots(p, count) | Certified boxes for the non-real roots of a square-free integer polynomial. |
+
+### Expression language used on these pages
+
+The demos and [Explore](https://ratmath.com/algebraic/explore.html) read expressions: numbers (exact, so 0.1 is 1/10), `i`, the variable `x` for polynomials, `+ − * / ^` (fractional powers are principal roots), implicit multiplication (`2x`, `3i`), `√`, and `name = expr` to keep a value.
+
+### Try it
+
+```js
+// Look something up in the tables above and try it here.
+const a = nthRoot(fromRational(2), 3);
+PRINT("∛2 =", a.toString(25));
+PRINT("minimal polynomial:", minimalPolynomial(a));
+PRINT("∛2 · ∛2 · ∛2 =", format(mul(mul(a, a), a)));
+factor([-1, 0, 0, 0, 0, 0, 1]).factors.map((f) => polys.format(f.factor))
+```
+
+---
+
+Page: https://ratmath.com/algebraic/explore.html
+
+Explore
+
+## Explore
+
+An exact calculator for everything in the library. Type an expression and press Enter (Shift+Enter for a new line). Numbers are exact, `x` makes polynomials, and `name = …` keeps a value for later lines.
+
+Click an entry to edit it again.
+
+How to write things
+Fractions and decimals are exact: `0.1` is 1/10. Powers with a fractional exponent are principal roots: `(-8)^(1/3)`, `i^(1/2)`. Multiplication can be implicit: `2x^3`, `3i`, `2sqrt(2)`. Polynomials use `x`: `roots(x^3 - 2)`. Pass digits to `recognize` in quotes to keep every digit.
+
+### Try it
+
+```js
+// The explorer's language calls these functions; here they are in JavaScript.
+const x = add(sqrt(fromRational(2)), sqrt(fromRational(3)));
+PRINT("x =", format(x), "≈", x.toString(15));
+PRINT("1/x =", format(div(fromRational(1), x)));
+PRINT("x is a root of", polys.format(x.poly));
+recognize(x.toString(30).replace("…", ""))?.poly
+```
+
+---
+
+Page: https://ratmath.com/algebraic/numbers.html
+
+Numbers
+
+## Algebraic numbers
+
+A number is algebraic when it is a root of a polynomial with integer coefficients. √2 is a root of x² − 2, the golden ratio of x² − x − 1, ∛2 + 1 of x³ − 3x² + 3x − 3. Everything here is about holding such numbers exactly.
+
+### A polynomial and an interval
+
+x² − 2 has two roots, √2 and −√2, so the polynomial alone does not say which number is meant. RatMath adds an interval with rational endpoints that contains exactly one root: √2 is the root of x² − 2 in (1, 2). That pair is the whole number. The interval can be halved again and again, each time keeping the half where the polynomial changes sign, so the number can be printed to any number of digits and every digit printed is certain.
+
+To find such intervals for every real root at once, the library uses a Sturm sequence: p, p′, and then the negated remainders of the Euclidean algorithm. The number of sign changes in the sequence at a point a, minus the number at b, is exactly the number of distinct roots in (a, b]. Splitting an interval until each piece holds one root gives the isolating intervals.
+
+### Arithmetic through resultants
+
+If a is a root of p and b a root of q, then a + b is a root of
+
+R(t) = Res_y( p(y), q(t − y) )
+
+the resultant: a polynomial in t whose roots are all the sums a′ + b′ of a root of p with a root of q. Products use q(t / y)·yⁿ instead. The resultant is computed exactly (by evaluating at enough integers and interpolating), then factored, and the result is placed on the one irreducible factor that has it as a root. Which root is decided by shrinking the intervals of a and b until exactly one candidate fits the interval sum. That last factoring step is what keeps degrees small: √2·√8 comes out as the rational 4, not as a root of a degree 4 polynomial.
+
+### Minimal polynomials and exact equality
+
+The minimal polynomial of a is the irreducible integer polynomial with a as a root, with the smallest degree. Its degree is the number's degree: 1 for rationals, 2 for √2 or the golden ratio, 3 for ∛2. Because results keep their minimal polynomial, equality is exact: a − b is computed and it is zero only if its minimal polynomial is x. An irrational number can never be mistaken for 0 because of rounding, because nothing is rounded.
+
+### Readable forms
+
+`format(a)` writes a number exactly when a short exact form exists: fractions for rationals, (p + q√d)/r for degree 2, nested radicals such as √(2 + √2)/2 for degree 4 numbers whose square is quadratic (denested to (√6 + √2)/4 when possible). Other numbers print as certified digits ending in "…". `toString(n)` always gives n digits.
+
+### In code
+
+```js
+import { fromRational, sqrt, nthRoot, add, mul, compare, equals, minimalPolynomial, format } from "@ratmath/algebraic";
+const two = fromRational(2);
+const a = add(sqrt(two), nthRoot(two, 3));
+a.poly;                        // its minimal polynomial (degree 6)
+a.interval(64);                // [lo, hi] as Core Rationals, width below 2⁻⁶⁴
+compare(a, fromRational("2.6")); // 1, decided exactly
+equals(mul(sqrt(two), sqrt(two)), two); // true
+```
+
+Limits: a resultant of numbers of degrees m and n has degree m·n, so long chains of operations on high-degree numbers get slow. Any result whose minimal polynomial would exceed degree 64 is refused with a RangeError.
+
+### Try it
+
+```js
+const two = fromRational(2);
+const a = add(sqrt(two), nthRoot(two, 3));
+PRINT("√2 + ∛2 ≈", a.toString(20));
+PRINT("minimal polynomial, degree", a.poly.length - 1, ":", a.poly);
+PRINT("an interval of width < 2⁻⁶⁴:", a.interval(64));
+PRINT("compare with 2.6:", compare(a, fromRational("2.6")));
+equals(mul(sqrt(two), sqrt(two)), two)
+```
+
+---
+
+Page: https://ratmath.com/algebraic/complex.html
+
+Numbers
+
+## Complex numbers
+
+Most polynomials have roots off the real line. x³ − 2 has one real root, ∛2, and two more at ∛2·(−1/2 ± i√3/2). These are algebraic numbers too, and the library holds them as exactly as the real ones.
+
+### A box that holds exactly one root
+
+A non-real root is stored as its polynomial plus a rectangle in the complex plane. Floating point finds approximate roots first (Durand–Kerner); each is then proven with the Krawczyk test. Writing z = x + iy turns p(z) = 0 into two real equations in x and y. For a box X with midpoint m and an approximate inverse Y of the Jacobian,
+
+K(X) = m − Y·f(m) + (I − Y·J(X))·(X − m)
+
+is computed in exact interval arithmetic. If K(X) lands strictly inside X, the box holds exactly one root, and K(X) ∩ X is a smaller box that still holds it. Boxes for different roots are checked to be disjoint, so every root is counted once. Repeating the step shrinks the box as far as you like.
+
+Roots in the plane
+
+### Arithmetic and display
+
+Sums and products work exactly as for real numbers: a resultant, factored, then the right root picked by box arithmetic. The imaginary unit is `I()`, the root of x² + 1 with positive imaginary part, and `complex(x, y)` builds x + iy from real parts.
+
+A complex number of degree 2 is always (p + q√−m)/r, so it prints exactly: −2 + 2i, −1/2 + i√3/2. For higher degrees `format` computes the real and imaginary parts exactly and prints them in radicals when they have short forms, so ∛i comes out as √3/2 + i/2. Otherwise each part gets certified digits.
+
+### Principal roots
+
+A non-zero number has n different n-th roots. The principal one is the one with the largest real part, the root whose angle is the original angle divided by n. For a negative real and even n two roots tie; the one with positive imaginary part wins, so √−4 = 2i.
+
+The library finds it without angles or logarithms. If m is the minimal polynomial of z, every n-th root of z is a root of m(xⁿ). Those candidates are factored and isolated; interval powers decide which candidates have z itself as their n-th power (the others give z's conjugates), and box comparison picks the largest real part. The answer is exact: `pow(nthRoot(z, 3), 3)` equals z.
+
+Odd roots of negative reals stay real by convention: `root(-8, 3)` is −2, not the principal complex root 1 + i√3.
+
+### In code
+
+```js
+import { I, complex, sqrt, nthRoot, abs, re, im, format, roots } from "@ratmath/algebraic";
+format(sqrt(complex(-3, 4)));       // "1 + 2i"
+format(nthRoot(I(), 3));            // "√3/2 + i/2"
+format(abs(complex(1, 1)));         // "√2"
+re(complex(1, 2)).toRational();     // 1
+const [, w] = roots([1, 1, 1], { complex: true }).map((r) => r.value);
+w.toString();                       // "−1/2 − i√3/2"
+w.box(64);                          // { re: [lo, hi], im: [lo, hi] } as Core Rationals
+```
+
+### Try it
+
+```js
+PRINT("√(−3 + 4i) =", format(sqrt(complex(-3, 4))));
+PRINT("∛i =", format(nthRoot(I(), 3)));
+PRINT("|1 + i| =", format(abs(complex(1, 1))));
+const [, w] = roots([1, 1, 1], { complex: true }).map((r) => r.value);
+PRINT("a cube root of unity:", w.toString());
+w.box(32)
+```
+
+---
+
+Page: https://ratmath.com/algebraic/angles.html
+
+Numbers
+
+## Angles and roots of unity
+
+cos(π/5) is (1 + √5)/4. cos(2π/7) is a root of 8x³ + 4x² − 4x − 1. Every cosine and sine of a rational multiple of π is an algebraic number, and the library gives it exactly, without ever using π.
+
+### Roots of unity and cyclotomic polynomials
+
+The n-th roots of unity are the n solutions of zⁿ = 1, the points e^(2πik/n) evenly spaced on the unit circle. Each one is primitive of some order d dividing n, and the primitive d-th roots are exactly the roots of the cyclotomic polynomial Φ_d, which has integer coefficients and is irreducible. So
+
+xⁿ − 1 = Π_(d | n) Φ_d(x), Φ₁ = x − 1, Φ₂ = x + 1, Φ₄ = x² + 1, Φ₁₂ = x⁴ − x² + 1
+
+and Φₙ is found by dividing xⁿ − 1 by the Φ_d of its smaller divisors. Its degree is φ(n), Euler's totient. The coefficients are usually 0 and ±1; Φ₁₀₅ is the first with a 2 in it.
+
+The n-th roots of unity
+
+n
+
+### Cosines without π
+
+Write c = cos θ. Then cos(nθ) = Tₙ(c), with Tₙ the Chebyshev polynomial (T₀ = 1, T₁ = x, Tₙ₊₁ = 2xTₙ − Tₙ₋₁). For θ = 2πj/n that gives Tₙ(c) = 1, which only says c is one of the cosines cos(2πj/n). To get the right one without π, the library uses two facts:
+
+- Φₙ is palindromic, so x^(−φ(n)/2)·Φₙ(x) is a polynomial in x + 1/x = 2cos θ. That polynomial, with 2c substituted, is the minimal polynomial of cos(2π/n), of degree φ(n)/2.
+
+- Its roots are cos(2πj/n) for the j between 0 and n/2 that are coprime to n, and cosine decreases there. So the k-th largest root is the k-th such j.
+
+So isolating the real roots (Sturm), sorting them, and counting picks the value exactly. sin(πr) is cos(π(1/2 − r)) and tan is their quotient.
+
+### When there is a radical form
+
+Gauss showed that cos(2π/n) can be written with square roots alone exactly when φ(n) is a power of 2, which is why a regular 17-gon can be drawn with ruler and compass but a 7-gon cannot. `format` finds the forms of degree 2 and 4: cos(π/5) = (1 + √5)/4, cos(π/8) = √(2 + √2)/2, sin(π/12) = (√6 − √2)/4. A nested radical √(A + B√d) is denested into √u ± √v whenever A² − B²d is a square. Higher degrees print as certified digits.
+
+### In code
+
+```js
+import { cosPi, sinPi, tanPi, rootOfUnity, rootsOfUnity, cyclotomic, format } from "@ratmath/algebraic";
+format(cosPi("1/5"));          // "(1 + √5)/4"
+format(sinPi("1/12"));         // "(√6 − √2)/4"
+cosPi("2/7").poly;             // [-1n, -4n, 4n, 8n]
+format(rootOfUnity(8, 3));     // "−√2/2 + i√2/2"
+cyclotomic(12);                // [1n, 0n, -1n, 0n, 1n]
+```
+
+### Try it
+
+```js
+PRINT("cos(π/5) =", format(cosPi("1/5")));
+PRINT("sin(π/12) =", format(sinPi("1/12")));
+PRINT("cos(2π/7) is a root of", polys.format(cosPi("2/7").poly));
+PRINT("8th roots of unity:", rootsOfUnity(8).map(format));
+cyclotomic(12)
+```
+
+---
+
+Page: https://ratmath.com/algebraic/recognize.html
+
+Numbers
+
+## Recognising numbers
+
+You have 1.6180339887 from a calculation and suspect it is (1 + √5)/2. Lattice reduction finds the small integer polynomial that a decimal nearly satisfies; the library then checks the guess exactly against the digits.
+
+### Small polynomials are short vectors
+
+Suppose x is known to D digits and we look for integers a₀ … a_d, not all zero and not large, with a₀ + a₁x + … + a_d·x^d = 0. Take C ≈ 10^D and the d + 1 vectors
+
+bᵢ = ( eᵢ , round(C·xⁱ) ), i = 0 … d
+
+(eᵢ is the i-th unit vector). The combination Σ aᵢbᵢ is (a₀, …, a_d, C·Σaᵢxⁱ + rounding). When the polynomial nearly vanishes at x, the last entry is tiny, so the whole vector is short. Other combinations have a last entry around C·(something not small). Finding the shortest vector of a lattice is hard, but the LLL algorithm (Lenstra, Lenstra and Lovász, 1982) finds one within a factor 2^(d/2) of it in polynomial time, and that is plenty here.
+
+LLL repeats two moves on the basis: size reduction (subtract rounded multiples of earlier vectors, so each Gram–Schmidt coefficient is at most 1/2) and a swap of neighbours whenever the Lovász condition |b*ₖ|² ≥ (3/4 − μ²)|b*ₖ₋₁|² fails. Here it runs in exact rational arithmetic.
+
+### A guess, checked
+
+The first reduced vector gives a candidate polynomial. It is factored, and the library looks for an irreducible factor with a root inside the interval the digits allow (one unit in the last digit either way). There is always some polynomial that fits a decimal, so a fit only counts as recognition when it is much smaller than the digits: a polynomial of degree d with coefficients up to H takes about (d + 1)·log₁₀H digits to pin down, and the library asks for 3 digits more than that. Without that margin, π = 3.14159265358979 would be "recognised" as a fraction with 8-digit numerator and denominator.
+
+A recognised number is a guess that agrees with every digit given, not a proof that the original quantity is that number; more digits could refute it. What it does give you is an exact candidate to verify by other means, for instance by substituting it back with the exact arithmetic of this library.
+
+### In code
+
+```js
+import { recognize, format, lll } from "@ratmath/algebraic";
+const r = recognize("0.9238795325112867");
+format(r.value);    // "√(2 + √2)/2"   (that is cos(π/8))
+r.poly;             // [1n, 0n, -8n, 0n, 8n]
+r.digitsUsed;       // 16
+r.digitsNeeded;     // 6
+recognize("3.14159265358979");   // null: nothing small enough fits
+lll([[1n, 0n, 0n, 10000n], [0n, 1n, 0n, 14142n], [0n, 0n, 1n, 20000n]]);  // reduced basis
+```
+
+Options: `{ maxDegree = 4, margin = 3 }`. The input can be a decimal string (a trailing "…" is allowed) or an interval `[lo, hi]`.
+
+### Try it
+
+```js
+const r = recognize("0.9238795325112867");
+PRINT("0.9238795325112867 looks like", format(r.value), "(cos(π/8))");
+PRINT("minimal polynomial:", r.poly, " digits used", r.digitsUsed, " needed", r.digitsNeeded);
+PRINT("π's digits:", recognize("3.14159265358979"));
+recognize("1.4142135623730951")?.poly
+```
+
+---
+
+Page: https://ratmath.com/algebraic/factoring.html
+
+Polynomials
+
+## Factoring
+
+x⁶ − 1 = (x − 1)(x + 1)(x² − x + 1)(x² + x + 1). Factoring into irreducible pieces is the engine under every algebraic number here, since each arithmetic result is put on its minimal polynomial by factoring a resultant.
+
+### The Zassenhaus method
+
+Factoring over the integers goes through a prime p:
+
+- Square-free part. Repeated factors are split off first with gcds of f and f′ (Yun's algorithm), so (x − 1)³ is found as x − 1 with multiplicity 3.
+
+- Factor mod p. Choose a small prime that keeps f square-free mod p. Over the finite field F_p, Cantor–Zassenhaus factoring is fast: distinct-degree factoring groups irreducible factors by degree using gcd(f, x^(pᵈ) − x), and equal-degree factoring splits each group with random gcds.
+
+- Hensel lifting. The factorisation mod p is lifted to one mod pᵏ, for pᵏ larger than twice a bound on the coefficients of any true factor (a Mignotte-style bound).
+
+- Recombination. Each true factor over Z is, mod pᵏ, a product of some of the lifted factors. Products of 1, 2, … lifted factors are tried (with symmetric remainders) until each one either divides f exactly or is ruled out.
+
+The mod p picture already says a lot. x⁴ + 1 is irreducible over the integers, yet it factors modulo every prime; the recombination step is what proves no product of the pieces works over Z.
+
+The same polynomial modulo several primes
+
+The degrees of the factors mod p are the cycle shapes of Frobenius acting on the roots; how often each shape appears as p varies is governed by the Galois group (Chebotarev's density theorem). See [Galois groups](https://ratmath.com/algebraic/galois.html).
+
+### In code
+
+```js
+import { factor, isIrreducible, factorModP } from "@ratmath/algebraic";
+factor([-1, 0, 0, 0, 0, 0, 1]);
+// { content: 1n, factors: [{ factor: [-1n, 1n], multiplicity: 1 }, …] }
+isIrreducible([1, 0, 0, 0, 1]);   // true
+factorModP([1n, 0n, 0n, 0n, 1n], 17n);  // four linear factors mod 17
+```
+
+### Try it
+
+```js
+const f = factor([-1, 0, 0, 0, 0, 0, 1]);   // x⁶ − 1
+for (const { factor: p, multiplicity } of f.factors) PRINT(polys.format(p), multiplicity > 1 ? `^${multiplicity}` : "");
+PRINT("x⁴ + 1 irreducible over Q:", isIrreducible([1, 0, 0, 0, 1]));
+factorModP([1n, 0n, 0n, 0n, 1n], 17n)
+```
+
+---
+
+Page: https://ratmath.com/algebraic/polynomials.html
+
+Polynomials
+
+## Polynomial toolkit
+
+The tools the rest of the library is built from, exposed for direct use: exact polynomial arithmetic over Q, resultants and discriminants, root counting, interpolation and partial fractions. In the expression language, `x` is the variable: `(x + 1)^3` is a polynomial.
+
+### Resultants
+
+The resultant Res(p, q) is a single number, built from the coefficients alone (the determinant of the Sylvester matrix), that is 0 exactly when p and q have a common root. Over the roots,
+
+Res(p, q) = lc(p)^deg q · lc(q)^deg p · Π (αᵢ − βⱼ)
+
+which is why resultants manufacture polynomials for sums and products of algebraic numbers: put a parameter t inside q and the resultant becomes a polynomial in t that vanishes at every αᵢ + βⱼ.
+
+### Discriminants
+
+The discriminant of p (degree n, leading coefficient a) is (−1)^(n(n−1)/2)·Res(p, p′)/a = a^(2n−2)·Π_(i
+
+### Counting real roots
+
+A Sturm sequence counts distinct real roots in any interval (a, b] exactly, without finding them: count sign changes of p, p′, −rem(p, p′), … at a and at b, and subtract. `countroots(p, a, b)` works on the square-free factors, so repeated roots count once.
+
+### Interpolation
+
+Through n points with distinct x there is exactly one polynomial of degree below n. Newton's divided differences build it with exact rationals: `interpolate([[0, 1], [1, 3], [2, 7]])` gives x² + x + 1.
+
+### Partial fractions
+
+A fraction num/den splits into a polynomial plus a sum of simple pieces, one group for each irreducible factor f of den with multiplicity e:
+
+num/den = q(x) + Σ_f Σ_(k ≤ e) aₖ(x)/f(x)ᵏ, deg aₖ < deg f
+
+The library factors den over the integers, splits the fraction between coprime factors with the extended Euclidean algorithm (s·U + t·V = 1 gives N/(UV) = Nt/U + Ns/V), and then expands each A/fᵉ in powers of f by repeated division. This is the step behind integrating rational functions.
+
+### In code
+
+```js
+import { polys, resultant, discriminant, countRoots, interpolate, partialFractions } from "@ratmath/algebraic";
+resultant([-2, 0, 1], [-3, 0, 1]).toString();  // "1"
+discriminant([-1, -1, 0, 1]).toString();       // "-23"
+countRoots([1, -5, 0, 0, 0, 1], 0, 2);          // 2
+interpolate([[0, 1], [1, 3], [2, 7]]).map(String);  // ["1", "1", "1"]
+partialFractions([1], [0, -1, 0, 1]);
+// { polynomial: [], terms: [{ factor: [-1n, 1n], power: 1, numerator: [1/2] }, …] }
+polys.gcdExt([-1, 0, 1], [1, 1]);   // { gcd, s, t } with s·p + t·q = gcd
+polys.format(polys.compose([0, 0, 1], [1, 1]));  // "x² + 2x + 1"
+```
+
+Inputs: coefficient arrays, constant first, of numbers, BigInts, strings like "3/4" or Core Rationals. Outputs are arrays of Core Rationals.
+
+### Try it
+
+```js
+PRINT("resultant(x² − 2, x² − 3) =", resultant([-2, 0, 1], [-3, 0, 1]));
+PRINT("discriminant(x³ − x − 1) =", discriminant([-1, -1, 0, 1]));
+PRINT("roots of x⁵ − 5x + 1 in [0, 2]:", countRoots([1, -5, 0, 0, 0, 1], 0, 2));
+PRINT("interpolate (0,1), (1,3), (2,7):", interpolate([[0, 1], [1, 3], [2, 7]]));
+PRINT(polys.format(polys.compose([0, 0, 1], [1, 1])));
+partialFractions([1], [0, -1, 0, 1])
+```
+
+---
+
+Page: https://ratmath.com/algebraic/galois.html
+
+Polynomials
+
+## Galois groups
+
+The roots of an irreducible polynomial can be shuffled in some ways that keep every polynomial relation among them true. Those shuffles form the Galois group. It decides whether the roots can be written with radicals: x⁵ − x − 1 has group S₅ and cannot, x⁵ − 2 has group F₂₀ and its roots are ⁵√2 times fifth roots of unity.
+
+### Explore a polynomial
+
+Type an irreducible polynomial of degree up to 7. The page finds its group as actual permutations of the numbered roots, lists the subgroups with the field each one fixes, and compares the group with how the polynomial factors modulo primes.
+
+### Reading the explorer
+
+The group moving the roots. A permutation of the roots belongs to the group when every polynomial equation with rational coefficients that the roots satisfy stays true after the roots are moved. For x⁴ − 2 the roots are x₁ = −⁴√2, x₂ = ⁴√2 and x₃, x₄ = ±i·⁴√2. Swapping x₁ with x₃ while leaving the other two alone is not allowed: x₁ + x₂ = 0 is true, but x₃ + x₂ = 0 is not. Complex conjugation always is allowed: it is the permutation that swaps each non-real root with its mirror image.
+
+Subgroups and fields (the Galois correspondence). Adjoining all the roots to Q gives the splitting field. Each subgroup H leaves some numbers in that field unmoved, and those numbers form a field between Q and the splitting field. This is a perfect dictionary: every intermediate field arises from exactly one subgroup, a subgroup of size m gives a field of degree |G|/m, and a bigger subgroup gives a smaller field. Normal subgroups correspond to the fields that are themselves splitting fields. The explorer finds, for each subgroup, a sum of products of roots that H leaves in place and whose values under the rest of the group are all different; the minimal polynomial of that number defines the fixed field.
+
+Solvable by radicals. The roots can be written with +, −, ×, ÷ and nested roots exactly when the group can be taken apart in abelian steps: replace the group by its commutator subgroup and repeat. If this reaches the trivial group, each step is a field extension made by adjoining a radical. For S₅ it stops at A₅, which is why x⁵ − x − 1 has no formula.
+
+Modulo primes. Dedekind's theorem connects the group with ordinary arithmetic: if the polynomial factors modulo p into pieces of degrees 2, 2 and 1, then the group contains a permutation with cycles of lengths 2, 2 and 1. Chebotarev's theorem says each shape occurs for a share of the primes equal to its share of the group. So the factorizations alone already hint at the group.
+
+### Asking for one answer
+
+### Degrees 2 and 3
+
+A quadratic's group swaps its two roots: C₂. For a cubic the group is either all six permutations S₃ or just the three rotations A₃ = C₃. The test is the discriminant Δ = Π(αᵢ − αⱼ)²: its square root Π(αᵢ − αⱼ) changes sign under odd permutations, so it is rational exactly when the group has only even ones. x³ − 3x + 1 has Δ = 81 = 9², group C₃.
+
+### Degree 4
+
+The resolvent cubic of x⁴ + bx³ + cx² + dx + e has roots α₁α₂ + α₃α₄, α₁α₃ + α₂α₄, α₁α₄ + α₂α₃; its coefficients are
+
+y³ − c·y² + (bd − 4e)·y − (b²e − 4ce + d²)
+
+Each transitive group of degree 4 leaves a different number of those three values fixed:
+
+| Resolvent cubic | Δ square? | Group | Order |
+
+| irreducible | no | S₄ | 24 |
+
+| irreducible | yes | A₄ | 12 |
+
+| three rational roots | yes | V₄ = C₂ × C₂ | 4 |
+
+| one rational root r | no | D₄ or C₄ | 8 or 4 |
+
+The last case is settled by the Kappe–Warren test: the group is C₄ exactly when x² − rx + e and x² + bx + (c − r) both split over Q(√Δ), that is, each has a discriminant that is 0, a square, or a square times Δ.
+
+### Degree 5, through certified resolvents
+
+The transitive groups of degree 5 are C₅ ⊂ D₅ ⊂ F₂₀ ⊂ S₅ and A₅ ⊂ S₅. The first three are exactly the solvable ones. The test for "inside F₂₀" uses a quantity that F₂₀ leaves alone but other permutations move: label the five roots as corners of a pentagon and let
+
+θ = (Σ_(pentagon edges) αᵢαⱼ − Σ_(pentagram edges) αᵢαⱼ)²
+
+There are six ways to draw the pentagon, giving six values θ₁ … θ₆ and the sextic resolvent Π(y − θₖ). The group lies in a copy of F₂₀ exactly when that sextic has a rational root (once it is square-free). Then the discriminant separates F₂₀ from D₅, and a second resolvent of degree 4, built from Σ αᵢ²αᵢ₊₁ around the oriented pentagon, separates D₅ from C₅.
+
+The resolvents have integer coefficients (they are symmetric functions of the roots of a monic integer polynomial), but no formula is needed. The library computes them from certified boxes around the five roots with exact interval arithmetic, refining until each coefficient's interval contains exactly one integer. So the result is proven, not estimated. If a resolvent comes out with a repeated root, the roots are first moved by a Tschirnhaus transformation y = x² + kx, which keeps the group.
+
+### Degrees 6 and 7, and the group as permutations
+
+There are 16 transitive groups of degree 6 and 7 of degree 7. One method covers them all, and it also yields the permutations themselves:
+
+- Orbits on pairs and triples. The polynomial Π(y − (αᵢ + αⱼ)) over all pairs of roots has integer coefficients. Its irreducible factors are exactly the orbits of the group on pairs, so factoring it over the integers shows which pairs can be moved to which. The same is done for triples.
+
+- A group that contains the answer. The permutations that keep every one of those orbits (and are even when the discriminant is a square) form a group H₀ that contains the Galois group.
+
+- Candidates. The Galois group is a copy of one of the transitive groups in the table, sits inside H₀ and has exactly the observed orbits. Usually only one subgroup qualifies.
+
+- A deciding test. When several qualify, each candidate K is tested with F = Σ over K of α₁α₂²α₃³… with the roots permuted by K. Exactly the permutations in K leave F alone, so the group lies in K exactly when F is a rational number. That is checked exactly, as an integer root of the polynomial whose roots are the values of F on the cosets of K.
+
+All of it runs on certified boxes around the roots, refined until each integer coefficient is pinned down and the values that must differ sit in disjoint boxes. Repeated values are avoided by a Tschirnhaus transformation of the roots, which keeps the action.
+
+### In code
+
+```js
+import { galoisGroup, galoisAction } from "@ratmath/algebraic";
+galoisGroup([-2, 0, 0, 0, 1]);
+// { degree: 4, name: "D4", order: 8, label: "4T3", solvable: true,
+//   discriminant: Rational(-2048), discriminantIsSquare: false, resolventCubic: [...] }
+galoisGroup([-1, -1, 0, 0, 0, 1]).name;   // "S5", not solvable by radicals
+galoisGroup([3, -7, 0, 0, 0, 0, 0, 1]).name;   // "PSL(3,2)", order 168
+galoisGroup([-1, 0, 0, 0, 0, 1]);         // reducible: { reducible: true, factors: [...] }
+
+const a = galoisAction([-2, 0, 0, 0, 1]);  // x⁴ − 2
+a.roots;                // the four roots, numbered as the permutations use them
+a.permutations();       // ["()", "(3 4)", "(1 2)", "(1 2)(3 4)", ...]
+a.conjugation;          // complex conjugation as a permutation
+a.fixedField("(3 4)");  // { degree: 4, polynomial: x⁴ − 2, generator: "x₁", normal: false }
+a.correspondence();     // every subgroup class with its fixed field
+a.frobenius(200);       // factor patterns modulo 200 primes against the group's cycle types
+a.derivedSeries();      // [8, 2, 1]: solvable
+```
+
+Labels follow the transitive-group numbering nTk. Degree 8 and above are not covered.
+
+### Try it
+
+```js
+const a = galoisAction([-2, 0, 0, 0, 1]);   // x⁴ − 2
+PRINT(String(a));
+PRINT("permutations:", a.permutations().join("  "));
+for (const row of a.correspondence()) {
+  PRINT(String(row.order).padStart(2), row.normal ? "normal" : "      ", row.subgroup.toString().padEnd(26), "fixes", row.index === 1 ? "Q" : "a root of " + polys.format(row.field.polynomial));
+}
+galoisGroup([3, -7, 0, 0, 0, 0, 0, 1])
+```
+
+---
+
+Page: https://ratmath.com/algebraic/number-fields.html
+
+Structures
+
+## Number fields
+
+Q(√2) is every number a + b√2 with rational a and b. Sums, products and quotients stay in that form, so arithmetic is just arithmetic on pairs of fractions. A number field Q(α) does the same for any algebraic α, and it is far cheaper than general algebraic arithmetic when all your numbers live in one field.
+
+### Polynomials modulo m
+
+If m is the minimal polynomial of α, of degree n, then Q(α) = Q[x]/(m): every element is a polynomial in α of degree below n, and multiplication is polynomial multiplication followed by reduction modulo m (using m(α) = 0 to rewrite αⁿ). Inverses come from the extended Euclidean algorithm: since m is irreducible, any nonzero g has s·g + t·m = 1, so s is 1/g. Nothing here grows beyond n coefficients, unlike resultant arithmetic, whose degrees multiply.
+
+Compute in a field
+
+field
+
+element, as coefficients of 1, α, α², … power
+
+### Norm and trace
+
+Multiplying by an element g is a linear map on the basis 1, α, …, α^(n−1). Its determinant is the norm N(g) and its trace is the trace Tr(g); both are rational, and they equal the product and the sum of the n conjugates of g. In Q(√d), N(a + b√d) = a² − db², and N(g·h) = N(g)·N(h). The units of the ring of integers are exactly the integral elements of norm ±1; the [continued fraction page](https://ratmath.com/algebraic/continued-fractions.html) finds them for Q(√d).
+
+In Q(i) the norm of a + bi is a² + b², which is why a prime p ≡ 1 mod 4 is a sum of two squares: it stops being prime in Z[i] and splits as (a + bi)(a − bi).
+
+### Embeddings
+
+A field element is an abstract polynomial in α. `toAlgebraic()` turns it into an actual number by substituting a chosen root of m, the embedding. Q(√2) uses the positive root, Q(i) the root with positive imaginary part, and you can pick any root by index when making a field.
+
+### A field object
+
+Every NumberField is also a plain field object `{ zero, one, add, sub, mul, div, neg, sign }`, the interface that @ratmath/linalg's field-generic algorithms (Gaussian elimination, determinants, inverses) run on. So a matrix over Q(√2) is solved with the same code as one over Q.
+
+### Factoring over a field, and bigger fields
+
+A polynomial that is irreducible over Q can split once the field grows: x⁴ + 1 has no rational factor, but over Q(√2) it is (x² + √2x + 1)(x² − √2x + 1). `K.factor(p)` finds such factors by Trager's method. Shift the polynomial by a multiple of α, multiply all its conjugates together (the norm) to get a rational polynomial, factor that over Q with the ordinary factoring code, and take a gcd with each rational factor to pull the pieces back into K.
+
+The same norm gives new fields. If g is irreducible over K, the norm is the minimal polynomial of γ = β + sα for a root β of g, and Q(γ) is all of K(β). So `K.extend(g)` returns an ordinary NumberField together with the old generator and the new root written in γ. Repeating that until a polynomial has all its roots gives its splitting field (`NumberField.splitting`), and `NumberField.containing([a, b])` builds the smallest field holding several exact numbers at once, which is the way to do fast closed arithmetic with √2 and √3 together.
+
+### In code
+
+```js
+import { NumberField } from "@ratmath/algebraic";
+const K = NumberField.quadratic(2);   // Q(√2)
+const a = K.of([1, 1]);               // 1 + √2
+a.inv().toString();                   // "−1 + √2"
+a.pow(5).toString();                  // "41 + 29√2"
+a.norm().toString();                  // "-1"
+a.trace().toString();                 // "2"
+a.toAlgebraic().toString(20);         // "2.41421356237309504880…"
+
+const G = NumberField.gaussian();     // Q(i)
+G.of([1, 2]).mul(G.of([1, 2])).toString();  // "−3 + 4i"
+const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
+C.gen.pow(3).toRational().toString(); // "2"
+
+K.factor([1, 0, 0, 0, 1]).factors.map((f) => f.factor.join(", "));  // ["1, √2, 1", "1, −√2, 1"]
+K.roots([-8, 0, 1]).map((r) => r.value.toString());                 // ["2√2", "−2√2"]
+const S = NumberField.splitting([-2, 0, 0, 1]);   // x³ − 2
+S.degree;                                         // 6
+const { field, elements: [r2, r3] } = NumberField.containing([sqrt(fromRational(2)), sqrt(fromRational(3))]);
+format(r2.mul(r3).toAlgebraic());                 // "√6"
+```
+
+### Try it
+
+```js
+const K = NumberField.quadratic(2);   // Q(√2)
+const a = K.of([1, 1]);               // 1 + √2
+PRINT("1/a =", a.inv().toString(), "  a⁵ =", a.pow(5).toString());
+PRINT("norm", a.norm().toString(), " trace", a.trace().toString());
+const G = NumberField.gaussian();
+PRINT("(1 + 2i)² =", G.of([1, 2]).mul(G.of([1, 2])).toString());
+const C = new NumberField([-2, 0, 0, 1], { name: "∛2" });
+PRINT("∛2 cubed =", C.gen.pow(3).toString());
+PRINT("x⁴ + 1 over Q(√2):", K.factor([1, 0, 0, 0, 1]).factors.map((f) => "(" + f.factor.join(", ") + ")").join(" "));
+const S = NumberField.splitting([-2, 0, 0, 1]);
+PRINT("splitting field of x³ − 2 has degree", S.degree, "roots:", S.roots.join(" ; "));
+const both = NumberField.containing([sqrt(fromRational(2)), sqrt(fromRational(3))]);
+format(both.elements[0].mul(both.elements[1]).toAlgebraic())
+```
+
+---
+
+Page: https://ratmath.com/algebraic/finite-fields.html
+
+Structures
+
+## Finite fields and modular arithmetic
+
+Arithmetic modulo a prime p is a field with p elements: every nonzero number has an inverse. Polynomials over it, taken modulo an irreducible polynomial of degree k, give a field with pᵏ elements. Every finite field is one of these.
+
+### F_p and its multiplicative group
+
+The nonzero elements of F_p form a cyclic group of order p − 1: some primitive root g has every nonzero element as a power gˣ. The exponent x is the discrete logarithm, easy to state and hard to compute for large p, which is what makes Diffie–Hellman work. The library finds orders by dividing p − 1 by its prime factors while the power stays 1, primitive roots by testing g^((p−1)/q) ≠ 1 for each prime q dividing p − 1, and logarithms by baby-step giant-step in about √p steps.
+
+Square roots mod p use Tonelli–Shanks; whether one exists is the Legendre symbol (a/p), computed by quadratic reciprocity. Integers are factored by trial division and then Pollard's rho, which found 2⁶⁷ − 1 = 193707721 · 761838257287, the factorisation Frank Cole multiplied out on a blackboard in 1903.
+
+### GF(pᵏ)
+
+For k > 1 an element is a polynomial of degree below k with coefficients mod p; the library picks the first monic irreducible modulus of degree k automatically (or takes yours). Multiplication reduces modulo it. The table shows the field's multiplication or its powers of a generator, which list every nonzero element exactly once.
+
+A small field
+
+p
+k
+show
+
+### Uses
+
+Finite fields are where the [factoring](https://ratmath.com/algebraic/factoring.html) algorithm does its first, fast step, and where exact linear algebra gets its speed: @ratmath/linalg computes determinants modulo many primes and reassembles them with the Chinese remainder theorem (`crt` in [@ratmath/numtheory](https://ratmath.com/numtheory/congruences.html)). The field objects plug into its field-generic algorithms directly.
+
+### In code
+
+```js
+import { primeField, galoisField, factorInteger, sqrtMod, discreteLogMod } from "@ratmath/algebraic";
+const F = primeField(101);
+F.inv(2n);                 // 51n
+F.order(2n);               // 100n: 2 is a primitive root mod 101
+F.log(5n);                 // x with 2ˣ = 5
+const G = galoisField(2, 8);          // GF(256), with the first irreducible modulus of degree 8
+const g = G.primitive();
+G.format(G.pow(g, 10));
+G.log(G.mul(g, g));        // 2n
+factorInteger(600851475143n);   // [{ prime: 71n, exponent: 1 }, …]
+```
+
+### Try it
+
+```js
+const F = primeField(101);
+PRINT("1/2 mod 101 =", F.inv(2n), "  order of 2:", F.order(2n));
+const G = galoisField(2, 8);
+const g = G.primitive();
+PRINT("in GF(256), g¹⁰ =", G.format(G.pow(g, 10)));
+PRINT("600851475143 =", factorInteger(600851475143n).map((f) => `${f.prime}${f.exponent > 1 ? "^" + f.exponent : ""}`).join(" · "));
+discreteLogMod(3, 13, 17)
+```
