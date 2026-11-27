@@ -250,6 +250,8 @@ export function simplestBetween(a, b) {
  * A real algebraic number: a root of the square-free integer polynomial
  * `poly` in the open interval (lo, hi), or an exact rational.
  */
+const ROUND_MODES = new Set(["half-even", "half-up", "toward-zero", "floor", "ceil"]);
+
 export class AlgebraicReal {
   #rational = null;
   #checked = false;
@@ -373,6 +375,43 @@ export class AlgebraicReal {
     if (this.#rational) return pairToNumber(...this.#rational);
     this.refine(60);
     return pairToNumber(...half(this.lo, this.hi));
+  }
+
+  /**
+   * Round to k decimal places with a Core rounding mode ("half-even" by
+   * default, "half-up", "toward-zero", "floor", "ceil"), as a Core Rational.
+   * A rational value is rounded exactly, so ties follow the mode. An
+   * irrational one is never on a boundary, so the interval is refined until
+   * no rounding boundary (a multiple of 10^-k for the directed modes, a
+   * half-way point for the others) lies strictly inside it; then every point
+   * of the interval, the number included, rounds the same way.
+   */
+  roundTo(k = 0, mode = "half-even") {
+    if (!Number.isSafeInteger(k) || k < 0) throw new RangeError("roundTo needs a whole number of places, 0 or more");
+    if (!ROUND_MODES.has(mode)) throw new TypeError(`unknown rounding mode ${mode}: use ${[...ROUND_MODES].join(", ")}`);
+    const r = this.toRational();
+    if (r) return r.roundTo(k, mode);
+    const scale = 10n ** BigInt(k);
+    const directed = mode === "floor" || mode === "ceil" || mode === "toward-zero";
+    // scaled end n/d shifted so that the boundaries become the integers
+    const shifted = ([n, d]) => (directed ? [n * scale, d] : [2n * n * scale - d, 2n * d]);
+    const floorQ = ([n, d]) => (n >= 0n ? n / d : -((-n + d - 1n) / d));
+    for (let bits = Math.ceil(k * 3.33) + 8; ; bits *= 2) {
+      this.refine(bits);
+      const [ln, ld] = shifted(this.lo);
+      const [hn, hd] = shifted(this.hi);
+      // the smallest integer above L is floor(L) + 1: a boundary is inside when it is below H
+      if ((floorQ([ln, ld]) + 1n) * hd >= hn) return toRational(half(this.lo, this.hi)).roundTo(k, mode);
+    }
+  }
+
+  /** k decimal places as a string, rounded with roundTo(k, mode): the digits are certain, not approximate. */
+  toFixed(k = 0, mode = "half-even") {
+    const q = this.roundTo(k, mode);
+    const neg = q.numerator < 0n;
+    const digits = ((neg ? -q.numerator : q.numerator) * 10n ** BigInt(k) / q.denominator).toString().padStart(k + 1, "0");
+    const text = k ? `${digits.slice(0, -k)}.${digits.slice(-k)}` : digits;
+    return neg ? `-${text}` : text;
   }
 
   /** Decimal digits, with the last digit certain up to one unit. */

@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- `AlgebraicReal#toFixed(k, mode)` and `roundTo(k, mode)`: rounding to k
+  decimal places with the Core rounding modes, refined until the rounding is
+  decided, with ties of rational values decided exactly (Course Test roadmap,
+  batch A6).
 - Plain numbers work wherever an algebraic number is expected: `sqrt(48)`,
   `nthRoot(27n, 3)`, `add(sqrt(2), 1)`, `compare(sqrt(2), "1.5")` and the rest
   of the arithmetic read a bigint, number, numeric string, Core `Rational` or

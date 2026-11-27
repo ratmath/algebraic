@@ -2,9 +2,9 @@
 
 > Exact algebraic numbers (real and complex), exact trigonometry, polynomial factoring, Galois groups, continued fractions, number fields and finite fields for RatMath. Part of the RatMath Shelf; numbers come from @ratmath/core (a peer dependency). ESM: `import * as algebraic from "@ratmath/algebraic"`.
 
-Built from 0.1.0, commit 92bae17. `file:line` is relative to the package root (also node_modules/@ratmath/algebraic/); on GitHub: https://github.com/ratmath/algebraic/blob/92bae17/<file>#L<line>. Docs pages are under https://ratmath.com/algebraic/. Full types: index.d.ts.
+Built from 0.1.0, commit b72940c plus uncommitted changes. `file:line` is relative to the package root (also node_modules/@ratmath/algebraic/); on GitHub: https://github.com/ratmath/algebraic/blob/b72940c/<file>#L<line>. Docs pages are under https://ratmath.com/algebraic/. Full types: index.d.ts.
 
-Types: `type Pair = [bigint, bigint]`; `type RationalLike = Pair | Rational | bigint | number | string`; `type IntPoly = bigint[]`; `type PolyLike = RationalLike[]`; `type PairInterval = [Pair, Pair]`; `type Algebraic = AlgebraicReal | ComplexAlgebraic`; `type FieldArg = NumberFieldElement | RationalLike`; `type Permutation = number[]`
+Types: `type Pair = [bigint, bigint]`; `type RationalLike = Pair | Rational | Integer | bigint | number | string`; `type IntPoly = bigint[]`; `type PolyLike = RationalLike[]`; `type PairInterval = [Pair, Pair]`; `type RoundingMode = "half-even" | "half-up" | "toward-zero" | "floor" | "ceil"`; `type Algebraic = AlgebraicReal | ComplexAlgebraic`; `type AlgebraicLike = Algebraic | RationalLike`; `type FieldArg = NumberFieldElement | RationalLike`; `type Permutation = number[]`
 
 ## Docs
 
@@ -15,7 +15,7 @@ Types: `type Pair = [bigint, bigint]`; `type RationalLike = Pair | Rational | bi
 
 name(params) → result — meaning · file:line · docs page
 
-- `AlgebraicReal class: rational, poly, lo, hi, refine, isRational, interval, toRational, toNumber` — A real algebraic number: a root of the square-free integer polynomial `poly` in the open interval (lo, hi), or an exact rational. · src/poly.js:253
+- `AlgebraicReal class: rational, poly, lo, hi, refine, isRational, interval, toRational, toNumber, roundTo, toFixed` · src/poly.js:255
 - `isolate(p: IntPoly) → AlgebraicReal[]` — Isolate the real roots of a square-free polynomial, ascending. · src/poly.js:195
 - `countRealRoots(p: IntPoly) → number` — Count of distinct real roots of a square-free polynomial. · src/poly.js:189
 - `squareFree(p: IntPoly) → Array<{ factor: IntPoly; multiplicity: number }>` — Yun's square-free factorisation: [{ factor, multiplicity }], factors primitive, nonconstant. · src/poly.js:131
@@ -23,35 +23,36 @@ name(params) → result — meaning · file:line · docs page
 - `ComplexAlgebraic class: poly, re, im, conjugate, refine, box, toNumbers, toDecimal, toString, imSign` — A complex algebraic number: the unique root of the square-free integer polynomial `poly` in the box re × im (each [lo, hi] of pairs). · src/complex.js:77
 - `certifyComplexRoots(p: IntPoly, count: number) → ComplexAlgebraic[] | null` — Certified non-real roots of a square-free integer polynomial, given how many there are (from a Sturm count). · src/complex.js:172
 - `fromRational(x: RationalLike) → AlgebraicReal` — A rational (pair [n, d], Core Rational, bigint, number or string) as an AlgebraicReal. · src/arith.js:29 · numbers
-- `rationalOf(a: Algebraic) → Rational | null` — The exact rational value of a, or null. · src/arith.js:35
-- `roots(coeffs: PolyLike, options?: { complex?: boolean }) → Array<{ value: Algebraic; multiplicity: number }>` — All roots of an integer or rational polynomial (coefficients constant first, as bigints, pairs or Rationals), each with its multiplicity. · src/arith.js:62 · complex
-- `realRoots(coeffs: PolyLike) → Array<{ value: AlgebraicReal; multiplicity: number }>` — Real roots only (shorthand for roots(p)). · src/arith.js:88
-- `minimalPolynomial(a: Algebraic) → IntPoly` — The minimal polynomial of a (primitive integer, constant first). · src/arith.js:91 · numbers
-- `simplify(a: T) → T` — The same number, re-expressed on its minimal polynomial. · src/arith.js:100
-- `neg(a: T) → T` · src/arith.js:225 · number-fields
-- `add(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:236 · numbers
-- `sub(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:249 · number-fields
-- `mul(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:251 · numbers
-- `inv(a: Algebraic) → Algebraic` · src/arith.js:287
-- `div(a: Algebraic, b: Algebraic) → Algebraic` · src/arith.js:307 · number-fields
-- `pow(a: Algebraic, k: number | RationalLike) → Algebraic` · src/arith.js:309 · complex
-- `sign(a: AlgebraicReal) → -1 | 0 | 1` — -1, 0 or 1 for a real a, exactly. · src/arith.js:266 · number-fields
-- `isZero(a: Algebraic) → boolean` · src/arith.js:277
-- `compare(a: AlgebraicReal, b: AlgebraicReal) → -1 | 0 | 1` — -1, 0, 1 as real a compares to real b. · src/arith.js:322 · numbers
-- `equals(a: Algebraic, b: Algebraic) → boolean` — Equality, exactly (works for complex numbers too). · src/arith.js:325 · numbers
-- `I() → ComplexAlgebraic` — The imaginary unit i, the root of x² + 1 with positive imaginary part. · src/arith.js:335 · complex
-- `conjugate(a: T) → T` · src/arith.js:340
-- `re(a: Algebraic) → AlgebraicReal` — Real part, as an exact real algebraic number. · src/arith.js:343 · complex
-- `im(a: Algebraic) → AlgebraicReal` — Imaginary part, as an exact real algebraic number. · src/arith.js:350 · complex
-- `nthRoot(a: Algebraic, n: number) → Algebraic` — The n-th root (n ≥ 2) of a. · src/arith.js:448 · numbers
-- `sqrt(a: Algebraic) → Algebraic` — The principal square root: √a ≥ 0 for real a ≥ 0, i·√(−a) for a < 0, the root with positive real part otherwise. · src/arith.js:488 · numbers
+- `num(a: AlgebraicLike) → Algebraic` — An algebraic number as given, or a plain number (bigint, number, numeric string, Core Rational or Integer, [n, d] pair) read as a rational one, so that… · src/arith.js:39
+- `rationalOf(a: Algebraic) → Rational | null` — The exact rational value of a, or null. · src/arith.js:42
+- `roots(coeffs: PolyLike, options?: { complex?: boolean }) → Array<{ value: Algebraic; multiplicity: number }>` — All roots of an integer or rational polynomial (coefficients constant first, as bigints, pairs or Rationals), each with its multiplicity. · src/arith.js:69 · complex
+- `realRoots(coeffs: PolyLike) → Array<{ value: AlgebraicReal; multiplicity: number }>` — Real roots only (shorthand for roots(p)). · src/arith.js:95
+- `minimalPolynomial(a: AlgebraicLike) → IntPoly` — The minimal polynomial of a (primitive integer, constant first). · src/arith.js:98 · numbers
+- `simplify(a: T) → T` — The same number, re-expressed on its minimal polynomial. · src/arith.js:108
+- `neg(a: T) → T` · src/arith.js:234 · number-fields
+- `add(a: AlgebraicLike, b: AlgebraicLike) → Algebraic` · src/arith.js:246 · numbers
+- `sub(a: AlgebraicLike, b: AlgebraicLike) → Algebraic` · src/arith.js:261 · number-fields
+- `mul(a: AlgebraicLike, b: AlgebraicLike) → Algebraic` · src/arith.js:263 · numbers
+- `inv(a: AlgebraicLike) → Algebraic` · src/arith.js:303
+- `div(a: AlgebraicLike, b: AlgebraicLike) → Algebraic` · src/arith.js:324 · number-fields
+- `pow(a: AlgebraicLike, k: number | RationalLike) → Algebraic` · src/arith.js:326 · complex
+- `sign(a: AlgebraicReal | RationalLike) → -1 | 0 | 1` — -1, 0 or 1 for a real a, exactly. · src/arith.js:280 · number-fields
+- `isZero(a: AlgebraicLike) → boolean` · src/arith.js:292
+- `compare(a: AlgebraicReal | RationalLike, b: AlgebraicReal | RationalLike) → -1 | 0 | 1` — -1, 0, 1 as real a compares to real b. · src/arith.js:340 · numbers
+- `equals(a: AlgebraicLike, b: AlgebraicLike) → boolean` — Equality, exactly (works for complex numbers too). · src/arith.js:343 · numbers
+- `I() → ComplexAlgebraic` — The imaginary unit i, the root of x² + 1 with positive imaginary part. · src/arith.js:355 · complex
+- `conjugate(a: T) → T` · src/arith.js:360
+- `re(a: AlgebraicLike) → AlgebraicReal` — Real part, as an exact real algebraic number. · src/arith.js:363 · complex
+- `im(a: AlgebraicLike) → AlgebraicReal` — Imaginary part, as an exact real algebraic number. · src/arith.js:371 · complex
+- `nthRoot(a: AlgebraicLike, n: number) → Algebraic` — The n-th root (n ≥ 2) of a. · src/arith.js:470 · numbers
+- `sqrt(a: AlgebraicLike) → Algebraic` — The principal square root: √a ≥ 0 for real a ≥ 0, i·√(−a) for a < 0, the root with positive real part otherwise. · src/arith.js:511 · numbers
 - `isReal(a: unknown) → a is AlgebraicReal` · src/arith.js:19
 - `isComplex(a: unknown) → a is ComplexAlgebraic` · src/arith.js:20
 - `MAX_DEGREE: number` · src/arith.js:17
-- `complex(x: Algebraic | RationalLike, y?: Algebraic | RationalLike) → Algebraic` · src/arith.js:51 · complex
-- `norm(a: Algebraic) → AlgebraicReal` — |a|², exactly: a·ā (a real algebraic number). · src/arith.js:499
-- `abs(a: Algebraic) → AlgebraicReal` — |a|, exactly: the absolute value of a real, the modulus of a complex number. · src/arith.js:510 · complex
-- `format(a: Algebraic, options?: { digits?: number }) → string` — A readable exact form when one is cheap: rationals as fractions, quadratic irrationals as (p + q√d)/r, quadratic complex numbers as a + bi; otherwise… · src/arith.js:520 · numbers
+- `complex(x: Algebraic | RationalLike, y?: Algebraic | RationalLike) → Algebraic` · src/arith.js:58 · complex
+- `norm(a: AlgebraicLike) → AlgebraicReal` — |a|², exactly: a·ā (a real algebraic number). · src/arith.js:522
+- `abs(a: AlgebraicLike) → AlgebraicReal` — |a|, exactly: the absolute value of a real, the modulus of a complex number. · src/arith.js:534 · complex
+- `format(a: AlgebraicLike, options?: { digits?: number }) → string` — A readable exact form when one is cheap: rationals as fractions, quadratic irrationals as (p + q√d)/r, quadratic complex numbers as a + bi; otherwise… · src/arith.js:545 · numbers
 - `factor(p: IntPoly) → Factorization` — Factor an integer polynomial: { content, factors: [{ factor, multiplicity }] } with each factor primitive, irreducible over Q, positive leading coefficient. · src/factor.js:288 · factoring
 - `isIrreducible(p: IntPoly) → boolean` — True when p (degree ≥ 1) is irreducible over Q. · src/factor.js:303 · factoring
 - `factorModP(f: IntPoly, p: bigint) → Array<{ factor: bigint[]; multiplicity: number }> | bigint[][]` — Monic irreducible factors of f mod p; f must be square-free mod p (a RangeError says when it is not). · src/factor.js:160 · factoring

@@ -1,7 +1,7 @@
 // The Galois explorer: a polynomial's group acting on its roots, the subgroup
 // lattice with the fixed field of each subgroup, and factor patterns mod p.
 
-import { A, run, h, coords } from "./site.js?v=b16f7dfc21";
+import { A, run, h, coords } from "./site.js?v=4213fe0658";
 
 const SVG = "http://www.w3.org/2000/svg";
 const s = (tag, attrs = {}, ...kids) => {
